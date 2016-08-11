@@ -7,11 +7,12 @@ package com.machinomy.crdt.state
   * @tparam E
   * @tparam T
   */
-case class GTSet[E, T: TombStone](state: Map[E, T] = Map.empty[E, T]) extends Convergent[E, Set[E]] {
+case class GTSet[E, T: TombStone : Ordering](state: Map[E, T] = Map.empty[E, T]) extends Convergent[E, Set[E]] {
 
   override type Self = GTSet[E, T]
 
   val tombStone = implicitly[TombStone[T]]
+  val ordering = implicitly[Ordering[T]]
 
   def +(e: E): Self = new GTSet[E, T](state + (e -> tombStone.next))
 
@@ -24,7 +25,7 @@ case class GTSet[E, T: TombStone](state: Map[E, T] = Map.empty[E, T]) extends Co
       } else {
         val key = keys.head
         val value = (as.get(key), bs.get(key)) match {
-          case (Some(a), Some(b)) => tombStone.ordering.max(a, b)
+          case (Some(a), Some(b)) => ordering.max(a, b)
           case (Some(a), None) => a
           case (None, Some(b)) => b
           case (None, None) => throw new IllegalArgumentException(s"Expected to retrieve value for key $key")

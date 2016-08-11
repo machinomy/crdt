@@ -1,6 +1,6 @@
 package com.machinomy.crdt.state
 
-import org.joda.time.DateTime
+import com.github.nscala_time.time.Imports._
 import org.scalatest.FunSuite
 
 class GTSetSuite extends FunSuite {

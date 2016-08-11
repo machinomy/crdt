@@ -1,6 +1,6 @@
 package com.machinomy.crdt.state
 
-case class LWWElementSet[E, T: TombStone, B: Bias](additions: GTSet[E, T], removals: GTSet[E, T])
+case class LWWElementSet[E, T: TombStone : Ordering, B: Bias](additions: GTSet[E, T], removals: GTSet[E, T])
   extends Convergent[E, Set[E]]{
 
   override type Self = LWWElementSet[E, T, B]
@@ -43,5 +43,5 @@ case class LWWElementSet[E, T: TombStone, B: Bias](additions: GTSet[E, T], remov
 }
 
 object LWWElementSet {
-  def apply[E, T: TombStone, B: Bias](): LWWElementSet[E, T, B] = new LWWElementSet[E, T, B](GTSet[E, T](), GTSet[E, T]())
+  def apply[E, T: TombStone : Ordering, B: Bias](): LWWElementSet[E, T, B] = new LWWElementSet[E, T, B](GTSet[E, T](), GTSet[E, T]())
 }
