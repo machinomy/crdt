@@ -9,7 +9,7 @@ trait TombStone[A] {
 }
 
 object TombStone {
-  implicit val dateTime = new TombStone[DateTime] {
+  implicit object DateTimeTombStone extends TombStone[DateTime] {
     override def next: DateTime = DateTime.now()
     override def ordering: Ordering[DateTime] = implicitly[Ordering[DateTime]]
     override def zero: DateTime = new DateTime(0)
