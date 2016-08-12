@@ -3,7 +3,7 @@ package com.machinomy.crdt.state
 import cats.kernel.Semilattice
 
 case class ORSet[E, T: TombStone](state: Map[E, ORSet.Moves[T]]) extends Convergent[E, Set[E]] {
-  override type Self = ORSet[E, T]
+  type Self = ORSet[E, T]
 
   def +(element: E, tomb: T): Self = {
     val moves: ORSet.Moves[T] = state.getOrElse(element, ORSet.Moves[T]())

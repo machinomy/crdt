@@ -3,7 +3,7 @@ package com.machinomy.crdt.state
 import cats.kernel.Semilattice
 
 case class MCSet[E, T: Integral](state: Map[E, T] = Map.empty[E, T]) extends Convergent[E, Set[E]] {
-  override type Self = MCSet[E, T]
+  type Self = MCSet[E, T]
 
   def +(element: E): Self = {
     val tag = state.getOrElse(element, integral.zero)

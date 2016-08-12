@@ -8,7 +8,7 @@ import cats.syntax.all._
   *
   */
 case class TPSet[E](additions: GSet[E] = GSet[E](), removals: GSet[E] = GSet[E]()) extends Convergent[E, Set[E]] {
-  override type Self = TPSet[E]
+  type Self = TPSet[E]
 
   def +(e: E): TPSet[E] = copy(additions = additions + e)
 

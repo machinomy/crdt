@@ -3,7 +3,7 @@ package com.machinomy.crdt.state
 import cats.kernel.Semilattice
 
 case class GCounter[K, E : Numeric](state: Map[K, E] = Map.empty[K, E]) extends Convergent[E, E] {
-  override type Self = GCounter[K, E]
+  type Self = GCounter[K, E]
 
   def +(i: (K, E)): Self = increment(i._1, i._2)
 

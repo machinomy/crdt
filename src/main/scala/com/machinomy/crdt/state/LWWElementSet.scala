@@ -6,7 +6,7 @@ import cats.syntax.all._
 case class LWWElementSet[E, T: TombStone : Ordering, B: Bias](additions: GTSet[E, T], removals: GTSet[E, T])
   extends Convergent[E, Set[E]]{
 
-  override type Self = LWWElementSet[E, T, B]
+  type Self = LWWElementSet[E, T, B]
 
   val tombStone = implicitly[TombStone[T]]
 

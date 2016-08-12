@@ -4,7 +4,7 @@ import cats.kernel.Semilattice
 import cats.syntax.all._
 
 case class PNCounter[K, E: Numeric](increments: GCounter[K, E], decrements: GCounter[K, E]) extends Convergent[E, E] {
-  override type Self = PNCounter[K, E]
+  type Self = PNCounter[K, E]
 
   def +(i: (K, E)): Self = {
     val delta = i._2

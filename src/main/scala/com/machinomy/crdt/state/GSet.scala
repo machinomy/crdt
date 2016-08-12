@@ -3,7 +3,7 @@ package com.machinomy.crdt.state
 import cats.kernel.Semilattice
 
 case class GSet[E](state: Set[E] = Set.empty[E]) extends Convergent[E, Set[E]] {
-  override type Self = GSet[E]
+  type Self = GSet[E]
 
   def +(element: E) = new GSet[E](state + element)
 

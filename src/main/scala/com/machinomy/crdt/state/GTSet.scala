@@ -7,8 +7,7 @@ import cats.kernel.Semilattice
   *
   */
 case class GTSet[E, T: TombStone : Ordering](state: Map[E, T] = Map.empty[E, T]) extends Convergent[E, Set[E]] {
-
-  override type Self = GTSet[E, T]
+  type Self = GTSet[E, T]
 
   val tombStone = implicitly[TombStone[T]]
   val ordering = implicitly[Ordering[T]]

@@ -2,9 +2,7 @@ package com.machinomy.crdt.state
 
 import cats.kernel.Semilattice
 
-case class LWWRegister[E, T: TombStone : Ordering](value: E, timestamp: T) extends Convergent[E, E] {
-  override type Self = LWWRegister[E, T]
-}
+case class LWWRegister[E, T: TombStone : Ordering](value: E, timestamp: T) extends Convergent[E, E]
 
 object LWWRegister {
   def apply[E, T: TombStone : Ordering](value: E): LWWRegister[E, T] = LWWRegister[E, T](value, implicitly[TombStone[T]].next)
