@@ -1,6 +1,7 @@
 package com.machinomy.crdt.state
 
 import org.scalatest.FunSuite
+import cats.syntax.all._
 
 class MCSetSuite extends FunSuite {
   test("Just created MCSet is empty") {
@@ -16,17 +17,17 @@ class MCSetSuite extends FunSuite {
   test("MCSet additions can be merged") {
     val a = new MCSet[Int, Int] + 1 + 2 + 3
     val b = new MCSet[Int, Int] + 2 + 3 + 4
-    val result = a.merge(b)
+    val result = a |+| b
     assert(result.value === Set(1, 2, 3, 4))
   }
 
   test("MCSet additions and removals can be merged") {
     val a = new MCSet[Int, Int] + 1 + 2 + 3
     val b = new MCSet[Int, Int] - 2 - 3 - 4
-    val c = a.merge(b)
+    val c = a |+| b
     assert(c.value === Set(1, 2, 3))
 
-    val d = a.merge(a - 2 - 3)
+    val d = a |+| (a - 2 - 3)
     assert(d.value === Set(1))
   }
 }

@@ -1,5 +1,7 @@
 package com.machinomy.crdt.state
 
+import cats.kernel.Semilattice
+
 case class MCSet[E, T: Integral](state: Map[E, T] = Map.empty[E, T]) extends Convergent[E, Set[E]] {
   override type Self = MCSet[E, T]
 
@@ -27,22 +29,6 @@ case class MCSet[E, T: Integral](state: Map[E, T] = Map.empty[E, T]) extends Con
     copy(state = nextState)
   }
 
-  override def merge(that: Self): Self = {
-    val keys = that.state.keySet ++ this.state.keySet
-    val pairs =
-      for (key <- keys) yield (this.state.get(key), that.state.get(key)) match {
-        case (Some(a), Some(b)) =>
-          key -> integral.max(a, b)
-        case (Some(a), None) =>
-          key -> a
-        case (None, Some(b)) =>
-          key -> b
-        case (None, None) =>
-          throw new IllegalArgumentException(s"Expected to retrieve value for key $key")
-      }
-    copy(state = pairs.toMap)
-  }
-
   override def value: Set[E] = state.keySet.filter { element =>
     val change = state.getOrElse(element, integral.zero)
     isPresent(change)
@@ -50,10 +36,29 @@ case class MCSet[E, T: Integral](state: Map[E, T] = Map.empty[E, T]) extends Con
 
   /**
     * Odd means present.
-    * @param tag
-    * @return
     */
   def isPresent(tag: T): Boolean = integral.toInt(tag) % 2 != 0
 
   val integral = implicitly[Integral[T]]
+}
+
+object MCSet {
+  implicit def semilattice[E, T: Integral] = new Semilattice[MCSet[E, T]] {
+    val integral = implicitly[Integral[T]]
+    override def combine(x: MCSet[E, T], y: MCSet[E, T]): MCSet[E, T] = {
+      val keys = x.state.keySet ++ y.state.keySet
+      val pairs =
+        for (key <- keys) yield (x.state.get(key), y.state.get(key)) match {
+          case (Some(a), Some(b)) =>
+            key -> integral.max(a, b)
+          case (Some(a), None) =>
+            key -> a
+          case (None, Some(b)) =>
+            key -> b
+          case (None, None) =>
+            throw new IllegalArgumentException(s"Expected to retrieve value for key $key")
+        }
+      MCSet(pairs.toMap)
+    }
+  }
 }

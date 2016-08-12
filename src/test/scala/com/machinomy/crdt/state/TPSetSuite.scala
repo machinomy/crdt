@@ -1,6 +1,7 @@
 package com.machinomy.crdt.state
 
 import org.scalatest.FunSuite
+import cats.syntax.all._
 
 class TPSetSuite extends FunSuite {
   test("Fresh TPSet is empty") {
@@ -18,7 +19,7 @@ class TPSetSuite extends FunSuite {
   test("TPSet could be merged") {
     val a = TPSet[Int]() + 3 - 3
     val b = TPSet[Int]() + 1 - 1 + 2
-    val c = a.merge(b)
+    val c = a |+| b
     assert(c.value === Set(2))
   }
 }

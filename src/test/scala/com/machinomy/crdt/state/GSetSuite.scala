@@ -1,6 +1,7 @@
 package com.machinomy.crdt.state
 
 import org.scalatest.FunSuite
+import cats.syntax.all._
 
 class GSetSuite extends FunSuite {
   test("Just created GSet is empty") {
@@ -19,7 +20,7 @@ class GSetSuite extends FunSuite {
   test("GSets can be merged") {
     val a = GSet[Int](Set(1, 2, 3))
     val b = GSet[Int](Set(2, 3, 4))
-    val result = a.merge(b)
+    val result = a |+| b
     assert(result.value === Set(1, 2, 3, 4))
   }
 

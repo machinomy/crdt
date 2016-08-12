@@ -3,6 +3,7 @@ package com.machinomy.crdt.state
 import org.scalacheck.Gen
 import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.prop.PropertyChecks
+import cats.syntax.all._
 
 class GCounterSuite extends FunSuite with PropertyChecks with Matchers {
   val replicaGen = Gen.posNum[Int]
@@ -23,10 +24,10 @@ class GCounterSuite extends FunSuite with PropertyChecks with Matchers {
     assert(counter.value === 5)
   }
 
-  test("could be merged") {
+  test("could be combined") {
     val a = GCounter[Int, Int]() + (1, 2) + (2, 3)
     val b = GCounter[Int, Int]() + (1, 2) + (3, 4)
-    val c = a.merge(b)
+    val c = a |+| b
     assert(c.value === 2 + 3 + 4)
   }
 
@@ -52,22 +53,22 @@ class GCounterSuite extends FunSuite with PropertyChecks with Matchers {
   }
 
   test("associativity") {
-    forAll(Gen.listOfN(3, counterGen)) { case a :: b :: c :: Nil =>
-      (a merge (b merge c)) should be((a merge b) merge c)
+    forAll(Gen.listOfN(3, counterGen)) { case x :: y :: z :: Nil =>
+      (x |+| (y |+| z)) should be((x |+| y) |+| z)
     }
   }
 
   test("commutativity") {
-    forAll(Gen.listOfN(2, counterGen)) { case a :: b :: Nil =>
-      (a merge b) should be(b merge a)
+    forAll(Gen.listOfN(2, counterGen)) { case x :: y :: Nil =>
+      (x |+| y) should be(y |+| x)
     }
   }
 
   test("idempotency") {
     forAll(Gen.listOf(counterGen)) { list =>
       whenever(list.nonEmpty) {
-        val counter = list.reduce(_ merge _)
-        (counter merge counter) should be(counter)
+        val counter = list.reduce(_ |+| _)
+        (counter |+| counter) should be(counter)
       }
     }
   }

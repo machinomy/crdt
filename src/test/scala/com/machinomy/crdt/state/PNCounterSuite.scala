@@ -1,6 +1,7 @@
 package com.machinomy.crdt.state
 
 import org.scalatest.FunSuite
+import cats.syntax.all._
 
 class PNCounterSuite extends FunSuite {
   test("Empty value is zero") {
@@ -16,7 +17,7 @@ class PNCounterSuite extends FunSuite {
   test("Could be merged") {
     val a = PNCounter[Int, Int]() + (1, 1) + (2, 3)
     val b = PNCounter[Int, Int]() + (1, 2) + (2, -3)
-    val c = a.merge(b)
+    val c = a |+| b
     assert(c.value === 2)
   }
 

@@ -1,5 +1,8 @@
 package com.machinomy.crdt.state
 
+import cats.kernel.Semilattice
+import cats.syntax.all._
+
 case class PNCounter[K, E: Numeric](increments: GCounter[K, E], decrements: GCounter[K, E]) extends Convergent[E, E] {
   override type Self = PNCounter[K, E]
 
@@ -34,13 +37,17 @@ case class PNCounter[K, E: Numeric](increments: GCounter[K, E], decrements: GCou
 
   val num: Numeric[E] = implicitly[Numeric[E]]
 
-  override def merge(other: PNCounter[K, E]): PNCounter[K, E] = {
-    new PNCounter[K, E](other.increments.merge(this.increments), other.decrements.merge(this.decrements))
-  }
-
   override def value: E = num.minus(increments.value, decrements.value)
 }
 
 object PNCounter {
   def apply[K, E: Numeric](): PNCounter[K, E] = new PNCounter(GCounter[K, E](), GCounter[K, E]())
+
+  implicit def semilattice[K, E: Numeric] = new Semilattice[PNCounter[K, E]] {
+    override def combine(x: PNCounter[K, E], y: PNCounter[K, E]): PNCounter[K, E] = {
+      val increments = x.increments |+| y.increments
+      val decrements = x.decrements |+| y.decrements
+      new PNCounter[K, E](increments, decrements)
+    }
+  }
 }

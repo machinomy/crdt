@@ -2,6 +2,7 @@ package com.machinomy.crdt.state
 
 import com.github.nscala_time.time.Imports._
 import org.scalatest.FunSuite
+import cats.syntax.all._
 
 class LWWElementSetSuite extends FunSuite {
   test("Fresh LWWElementSet is empty") {
@@ -34,7 +35,7 @@ class LWWElementSetSuite extends FunSuite {
     val now = DateTime.now()
     val a = LWWElementSet[Int, DateTime, Bias.AdditionWins]() + (3, now) - (3, now - 10.minutes)
     val b = LWWElementSet[Int, DateTime, Bias.AdditionWins]() + (1, now) - (1, now + 2.minutes) + (2, now)
-    val c = a.merge(b)
+    val c = a |+| b
     assert(c.value === Set(3, 2))
   }
 }
