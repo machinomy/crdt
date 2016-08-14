@@ -53,6 +53,14 @@ case class TPTPGraph[A, V <: VertexLike[A], E <: EdgeLike[A, V]](va: Set[V], vr:
   def vertices: Set[V] = va -- vr
 
   def edges: Set[E] = ea -- er
+
+  def run(operation: TPTPGraph.AddVertex[A, V]): TPTPGraph.UpdateResult[A, V, E] = add(operation.v)
+
+  def run(operation: TPTPGraph.AddEdge[A, V, E]): TPTPGraph.UpdateResult[A, V, E] = add(operation.e)
+
+  def run(operation: TPTPGraph.RemoveVertex[A, V]): TPTPGraph.UpdateResult[A, V, E] = remove(operation.v)
+
+  def run(operation: TPTPGraph.RemoveEdge[A, V, E]): TPTPGraph.UpdateResult[A, V, E] = remove(operation.e)
 }
 
 object TPTPGraph {
