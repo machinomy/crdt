@@ -9,5 +9,14 @@ object Graph {
     def u: V
     def v: V
   }
-  trait GraphLike[A, V <: VertexLike[A]]
+  trait GraphLike[A, V <: VertexLike[A], E <: EdgeLike[A, V]] {
+    def vertices: Set[V]
+    def edges: Set[E]
+    def existsPath(u: V, v: V): Boolean
+    def add(e: E): GraphLike[A, V, E]
+    def add(v: V): GraphLike[A, V, E]
+  }
+  trait CanBuildEdge[A, V <: VertexLike[A], E <: EdgeLike[A, V]] {
+    def buildEdge(u: V, v: V): E
+  }
 }
