@@ -19,4 +19,7 @@ object Graph {
   trait CanBuildEdge[A, V <: VertexLike[A], E <: EdgeLike[A, V]] {
     def buildEdge(u: V, v: V): E
   }
+  trait CanBuildGraph[A, V <: VertexLike[A], E <: EdgeLike[A, V]] {
+    def buildGraph(vertices: Set[V], edges: Set[E]): GraphLike[A, V, E]
+  }
 }

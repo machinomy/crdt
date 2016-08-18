@@ -12,6 +12,8 @@ case class MonotonicDag[A, V <: VertexLike[A], E <: EdgeLike[A, V]](state: Graph
   def contains(v: V) = state.vertices.contains(v)
   def contains(e: E) = state.edges.contains(e)
 
+  def value = state
+
   def add(e: E): MonotonicDag.UpdateResult[A, V, E] =
     if(contains(e.u) && contains(e.v) && state.existsPath(e.u, e.v)) {
       val next = MonotonicDag(state.add(e))
