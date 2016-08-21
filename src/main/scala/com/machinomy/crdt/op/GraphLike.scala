@@ -2,7 +2,7 @@ package com.machinomy.crdt.op
 
 import scala.language.higherKinds
 
-object Graph {
+object GraphLike {
   trait VertexLike[A]
   trait SentinelLike[A] extends VertexLike[A]
   trait EdgeLike[A, V <: VertexLike[A]] {

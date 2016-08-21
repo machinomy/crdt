@@ -1,6 +1,6 @@
 package com.machinomy.crdt.op
 
-import com.machinomy.crdt.op.Graph._
+import com.machinomy.crdt.op.GraphLike._
 import com.sun.tools.corba.se.idl.InvalidArgument
 
 import scala.annotation.tailrec

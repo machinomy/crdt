@@ -1,6 +1,6 @@
 package com.machinomy.crdt.op
 
-import com.machinomy.crdt.op.Graph._
+import com.machinomy.crdt.op.GraphLike._
 
 /**
   * 2P2P-Graph
