@@ -33,7 +33,7 @@ case class MonotonicDag[A, V <: VertexLike[A], E <: EdgeLike[A, V]](state: Graph
 
   def run(operation: MonotonicDag.AddEdge[A, V, E]): MonotonicDag.UpdateResult[A, V, E] = add(operation.e)
 
-  def run(operation: MonotonicDag.AddVertex[A, V]): MonotonicDag.UpdateResult[A, V, E] = add(operation.v, operation.left, operation.right)
+  def run(operation: MonotonicDag.AddVertex[A, V])(implicit eb: CanBuildEdge[A, V, E]): MonotonicDag.UpdateResult[A, V, E] = add(operation.v, operation.left, operation.right)
 }
 
 object MonotonicDag {

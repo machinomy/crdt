@@ -10,7 +10,7 @@ case class PartialOrderDag[A, V <: VertexLike[A], E <: EdgeLike[A, V]](vertices:
   def contains(v: V): Boolean = vertices.value.contains(v)
   def value(implicit gb: CanBuildGraph[A, V, E]): GraphLike[A, V, E] = gb.buildGraph(vertices.value, edges)
 
-  def add(v: V, left: V, right: V)(implicit eb: CanBuildEdge[A, V, E]): PartialOrderDag.UpdateResult[A, V, E] =
+  def add(v: V, left: V, right: V)(implicit eb: CanBuildEdge[A, V, E], gb: CanBuildGraph[A, V, E]): PartialOrderDag.UpdateResult[A, V, E] =
     if (!contains(v) && value.existsPath(left, right)) {
       val nextVertices = vertices + v
       val leftEdge = eb.buildEdge(left, v)
@@ -31,7 +31,7 @@ case class PartialOrderDag[A, V <: VertexLike[A], E <: EdgeLike[A, V]](vertices:
       (this, None)
     }
 
-  def run(operation: PartialOrderDag.AddVertex[A, V]) =
+  def run(operation: PartialOrderDag.AddVertex[A, V])(implicit eb: CanBuildEdge[A, V, E], gb: CanBuildGraph[A, V, E]) =
     add(operation.v, operation.left, operation.right)
 
   def run(operation: PartialOrderDag.RemoveVertex[A, V]) =
