@@ -11,12 +11,12 @@ case class MonotonicDag[V, E, G](graph: GraphProxy[V, E, G])(implicit toProxy: G
   def existsPath(from: V, to: V, effective: G) = graph.existsPath(from, to)
 
   def add(e: E) = {
-    val source = graph.sourceVertex(e)
-    val destination = graph.destinationVertex(e)
-    val containsSource: Boolean = contains(source)
-    val containsDestination: Boolean = contains(destination)
+    val from = graph.fromVertex(e)
+    val to = graph.toVertex(e)
+    val containsSource: Boolean = contains(from)
+    val containsDestination: Boolean = contains(to)
     val effective = graph.addEdge(e)
-    if (containsSource && containsDestination && existsPath(source, destination, effective)) {
+    if (containsSource && containsDestination && existsPath(from, to, effective)) {
       (MonotonicDag(effective), Some(MonotonicDag.AddEdge[V, E, G](e)))
     } else {
       (this, None)
