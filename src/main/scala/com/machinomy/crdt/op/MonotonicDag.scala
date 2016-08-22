@@ -1,8 +1,8 @@
 package com.machinomy.crdt.op
 
 import GraphProxy._
-
-case class MonotonicDag[G <: GraphProxy](graph: G)(implicit graphLike: GraphLike[G]) {
+/*
+case class MonotonicDag[G <: GraphProxy](graph: G)(implicit graphLike: GraphLikeA[G]) {
   def value = graph.graph
 
   def add(e: G#E) = {
@@ -26,3 +26,4 @@ object MonotonicDag {
   sealed trait Update[G <: GraphProxy]
   case class AddEdge[G <: GraphProxy](e: G#E) extends Update[G]
 }
+*/

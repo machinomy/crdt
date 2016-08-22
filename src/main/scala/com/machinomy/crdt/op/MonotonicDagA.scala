@@ -1,6 +1,6 @@
 package com.machinomy.crdt.op
 
-import com.machinomy.crdt.op.GraphLike._
+import com.machinomy.crdt.op.GraphLikeA._
 
 /**
   * Add-only Monotonic DAG
