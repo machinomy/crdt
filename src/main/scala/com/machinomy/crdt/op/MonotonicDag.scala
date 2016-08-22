@@ -1,6 +1,6 @@
 package com.machinomy.crdt.op
 
-import GraphTypes._
+import GraphProxy._
 
 case class MonotonicDag[G <: GraphProxy](graph: G)(implicit graphLike: GraphLike[G]) {
   def value = graph.graph
