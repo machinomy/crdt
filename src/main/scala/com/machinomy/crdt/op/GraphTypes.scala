@@ -6,11 +6,17 @@ import scalax.collection.GraphEdge._
 import scalax.collection.GraphPredef._
 
 object GraphTypes {
+  implicit def intDiGraphToGraphBound(graph: Graph[Int, DiEdge]): GraphProxy = graphToScalaDiGraphProxy(graph)
+
+  def graphToScalaDiGraphProxy[A](_graph: Graph[A, DiEdge]) = new ScalaDiGraphProxy[A] { val graph = _graph }
+
   trait GraphProxy {
     type V
     type E
     type G
     type P
+
+    def graph: G
   }
 
   trait ScalaDiGraphProxy[A] extends GraphProxy {
@@ -28,6 +34,7 @@ object GraphTypes {
     def toVertex(graph: G#G, edge: G#E): G#V
     def path(graph: G#G, from: G#V, to: G#V): Option[G#P]
     def existsPath(graph: G#G, from: G#V, to: G#V): Boolean
+    def toProxy(graph: G#G): G
   }
 
   class ScalaDiGraphLike[A] extends GraphLike[ScalaDiGraphProxy[A]] {
@@ -49,11 +56,9 @@ object GraphTypes {
         toVertex <- graph.find(to)
         path <- fromVertex.pathTo(toVertex)
       } yield path
+
+    override def toProxy(graph: Graph[A, DiEdge]): ScalaDiGraphProxy[A] = graphToScalaDiGraphProxy(graph)
   }
-
-  def graphToScalaDiGraphProxy[A](graph: Graph[A, DiEdge]) = new ScalaDiGraphProxy[A] {}
-
-  implicit def intDiGraphToGraphBound(graph: Graph[Int, DiEdge]): GraphProxy = graphToScalaDiGraphProxy(graph)
 
   implicit object IntScalaDiGraphLike extends ScalaDiGraphLike[Int]
 }
