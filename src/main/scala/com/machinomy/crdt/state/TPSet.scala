@@ -4,7 +4,7 @@ import cats.kernel.Semilattice
 import cats.syntax.all._
 
 /**
-  * 2P-Set, really, or two-phase state.
+  * 2P-Set, really, or two-phase value.
   *
   */
 case class TPSet[E](additions: GSet[E] = GSet[E](), removals: GSet[E] = GSet[E]()) extends Convergent[E, Set[E]] {
