@@ -12,8 +12,8 @@ trait DiGraphLike[V, E[X] <: DiEdgeLikeIn[X], G <: Graph[V, E]] {
   def toVertex(graph: G, edge: E[V] with OuterEdge[V, E]): V
   def path(graph: G, from: V, to: V): Option[G#Path]
   def existsPath(graph: G, from: V, to: V): Boolean
-  def buildEdge(from: V, to: V): E[V] with OuterEdge[V, E]
-  def buildGraph(vertices: Set[V], edges: Set[E[V] with OuterEdge[V, E]]): G
+  def buildEdge(from: V, to: V): E[V] with OuterEdge[V, E] // @todo CanBuildEdge
+  def buildGraph(vertices: Set[V], edges: Set[E[V]]): G // @todo CanBuildGraph
   def isSentinel(v: V): Boolean
 }
 
@@ -39,7 +39,7 @@ object DiGraphLike {
       path(graph, from, to).isDefined
     override def buildEdge(from: Int, to: Int): DiEdge[Int] =
       from ~> to
-    override def buildGraph(vertices: Set[Int], edges: Set[DiEdge[Int] with OuterEdge[Int, DiEdge]]): Graph[Int, DiEdge] = ???
+    override def buildGraph(vertices: Set[Int], edges: Set[DiEdge[Int]]): Graph[Int, DiEdge] = Graph.from(vertices, edges)
     override def isSentinel(v: Int): Boolean = v == 0 || v == 100
   }
 }

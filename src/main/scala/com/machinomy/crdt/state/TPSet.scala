@@ -29,4 +29,6 @@ object TPSet {
       new TPSet[E](additions, removals)
     }
   }
+
+  def apply[E](elements: Set[E]): TPSet[E] = TPSet[E](GSet[E](elements))
 }
