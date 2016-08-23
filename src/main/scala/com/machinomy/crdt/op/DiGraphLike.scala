@@ -8,12 +8,11 @@ trait DiGraphLike[V, E[X] <: DiEdgeLikeIn[X], G <: Graph[V, E]] {
   def contains(graph: G, vertex: V): Boolean
   def addEdge(graph: G, edge: E[V] with OuterEdge[V, E]): G
   def addVertex(graph: G, vertex: V): G
-  def fromVertex(graph: G, edge: E[V]): V
-  def toVertex(graph: G, edge: E[V]): V
+  def fromVertex(graph: G, edge: E[V] with OuterEdge[V, E]): V
+  def toVertex(graph: G, edge: E[V] with OuterEdge[V, E]): V
   def path(graph: G, from: V, to: V): Option[G#Path]
   def existsPath(graph: G, from: V, to: V): Boolean
   def buildEdge(from: V, to: V): E[V] with OuterEdge[V, E]
-  //    def toProxy(graph: G#G): G
 }
 
 object DiGraphLike {
@@ -24,9 +23,9 @@ object DiGraphLike {
       graph + edge
     override def addVertex(graph: Graph[Int, DiEdge], vertex: Int): Graph[Int, DiEdge] =
       graph + vertex
-    override def fromVertex(graph: Graph[Int, DiEdge], edge: DiEdge[Int]): Int =
+    override def fromVertex(graph: Graph[Int, DiEdge], edge: DiEdge[Int] with OuterEdge[Int, DiEdge]): Int =
       edge.from
-    override def toVertex(graph: Graph[Int, DiEdge], edge: DiEdge[Int]): Int =
+    override def toVertex(graph: Graph[Int, DiEdge], edge: DiEdge[Int] with OuterEdge[Int, DiEdge]): Int =
       edge.to
     override def path(graph: Graph[Int, DiEdge], from: Int, to: Int): Option[graph.Path] =
       for {
