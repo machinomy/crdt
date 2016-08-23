@@ -17,7 +17,7 @@ class MonotonicDagSuite extends FunSuite with Matchers {
 
   test("add, vertex") {
     val g: Graph[Int, DiEdge] = Graph[Int, DiEdge]() + 1 + 100
-    val dag = MonotonicDag[Int, DiEdge, Graph[Int, DiEdge]](g)
+    val (dag, _)= MonotonicDag[Int, DiEdge, Graph[Int, DiEdge]](g).add(1 ~> 100)
     val (dag2, op) = dag.add(2, 1, 100)
     dag2.value.edges shouldNot be(empty)
   }
