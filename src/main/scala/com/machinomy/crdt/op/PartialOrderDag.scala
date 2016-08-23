@@ -26,7 +26,10 @@ case class PartialOrderDag[V, E[X] <: DiEdgeLikeIn[X]](vertices: TPSet[V], edges
     }
   }
 
-  def remove(v: V): PartialOrderDag.UpdateResult[V, E] =
+  def remove(v: V): PartialOrderDag.UpdateResult[V, E] = {
+    println(s"Currently: $value")
+    println(s"Contains: ${value.contains(v)}")
+    println(s"Is Sentinel: ${graphLike.isSentinel(v)}")
     if (value.contains(v) && !graphLike.isSentinel(v)) {
       val nextVertices = vertices - v
       val next = new PartialOrderDag[V, E](nextVertices, edges)
@@ -34,6 +37,7 @@ case class PartialOrderDag[V, E[X] <: DiEdgeLikeIn[X]](vertices: TPSet[V], edges
     } else {
       (this, None)
     }
+  }
 
   def run(operation: PartialOrderDag.AddVertex[V, E]): (PartialOrderDag[V, E], Option[Update[V, E]]) =
     add(operation.v, operation.left, operation.right)

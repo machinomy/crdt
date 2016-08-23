@@ -1,5 +1,6 @@
 package com.machinomy.crdt.op
 
+import scala.language.higherKinds
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import scalax.collection.GraphPredef._
@@ -40,6 +41,6 @@ object DiGraphLike {
     override def buildEdge(from: Int, to: Int): DiEdge[Int] =
       from ~> to
     override def buildGraph(vertices: Set[Int], edges: Set[DiEdge[Int]]): Graph[Int, DiEdge] = Graph.from(vertices, edges)
-    override def isSentinel(v: Int): Boolean = v == 0 || v == 100
+    override def isSentinel(v: Int): Boolean = v == 1 || v == 100
   }
 }
