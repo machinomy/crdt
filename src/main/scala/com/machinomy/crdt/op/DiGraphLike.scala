@@ -14,7 +14,7 @@ trait DiGraphLike[V, E[X] <: DiEdgeLikeIn[X], G <: Graph[V, E]] {
   def existsPath(graph: G, from: V, to: V): Boolean
   def buildEdge(from: V, to: V): E[V] with OuterEdge[V, E] // @todo CanBuildEdge
   def buildGraph(vertices: Set[V], edges: Set[E[V]]): G // @todo CanBuildGraph
-  def isSentinel(v: V): Boolean
+  def isSentinel(v: V): Boolean // @todo CanDetectSentinel
 }
 
 object DiGraphLike {
