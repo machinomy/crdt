@@ -3,7 +3,7 @@ import sbtrelease.ReleaseStateTransformations._
 
 name := "crdt"
 
-version := "0.0.1"
+version := "0.0.2-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
@@ -19,9 +19,14 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.9" % "test"
 )
 
+def ifRelease(step: ReleaseStep) = {
+  def foo(state: State) = state.get(versions).exists(_._1.endsWith("-SNAPSHOT"))
+}
+
 def doIfNotSnapshot(step: ReleaseStep) = {
   ReleaseStep(
     action = st => {
+      println(versions)
       if (!st.get(versions).getOrElse((None, None))._1.toString.endsWith("-SNAPSHOT")) {
         step.action(st)
       } else {
