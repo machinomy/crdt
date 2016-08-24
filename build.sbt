@@ -1,4 +1,3 @@
-import sbtrelease.ReleasePlugin.autoImport.ReleaseKeys._
 import sbtrelease.ReleaseStateTransformations._
 
 name := "crdt"
@@ -19,43 +18,27 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.9" % "test"
 )
 
-def ifRelease(step: ReleaseStep) = {
-  def foo(state: State) = state.get(versions).exists(_._1.endsWith("-SNAPSHOT"))
-}
-
-def doIfNotSnapshot(step: ReleaseStep) = {
-  ReleaseStep(
-    action = st => {
-      println(versions)
-      if (!st.get(versions).getOrElse((None, None))._1.toString.endsWith("-SNAPSHOT")) {
-        step.action(st)
-      } else {
-        st
-      }
-    },
-    check = step.check,
-    enableCrossBuild = step.enableCrossBuild
-  )
-}
+def whenRelease(releaseStep: ReleaseStep): ReleaseStep =
+  releaseStep.copy(state => if (Project.extract(state).get(isSnapshot)) state else releaseStep.action(state))
 
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
-  inquireVersions,
   runClean,
   runTest,
-  doIfNotSnapshot(setReleaseVersion),
-  doIfNotSnapshot(commitReleaseVersion),
-  doIfNotSnapshot(tagRelease),
+  whenRelease(commitReleaseVersion),
+  whenRelease(tagRelease),
   publishArtifacts,
-  doIfNotSnapshot(setNextVersion),
-  doIfNotSnapshot(commitNextVersion),
-  doIfNotSnapshot(pushChanges)
+  whenRelease(pushChanges)
 )
 
 publishTo := {
-  if (isSnapshot.value)
-    Some("Machinomy" at "http://artifactory.machinomy.com/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime)
-  else
-    Some("Machinomy" at "http://artifactory.machinomy.com/artifactory/libs-release-local/")
+  val address = "http://artifactory.machinomy.com/artifactory/libs-release-local"
+  if (isSnapshot.value) {
+    val timestamp = new java.util.Date().getTime
+    Some("Machinomy" at s"$address;build.timestamp=$timestamp")
+  } else {
+    Some("Machinomy" at address)
+  }
 }
+
 credentials += Credentials(new File("credentials.properties"))
