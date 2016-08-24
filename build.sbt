@@ -3,7 +3,7 @@ import sbtrelease.ReleaseStateTransformations._
 
 name := "crdt"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.0.1"
 
 scalaVersion := "2.11.8"
 
