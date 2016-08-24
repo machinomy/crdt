@@ -32,12 +32,12 @@ releaseProcess := Seq[ReleaseStep](
 )
 
 publishTo := {
-  val address = "http://artifactory.machinomy.com/artifactory/libs-release-local"
+  val base = "http://artifactory.machinomy.com/artifactory"
   if (isSnapshot.value) {
     val timestamp = new java.util.Date().getTime
-    Some("Machinomy" at s"$address;build.timestamp=$timestamp")
+    Some("Machinomy" at s"$base/snapshot;build.timestamp=$timestamp")
   } else {
-    Some("Machinomy" at address)
+    Some("Machinomy" at s"$base/release")
   }
 }
 
