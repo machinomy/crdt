@@ -51,9 +51,9 @@ case class GCounter[K, E : Numeric](state: Map[K, E] = Map.empty[K, E]) extends 
 
 object GCounter {
   implicit def semilattice[K, E: Numeric] = new Semilattice[GCounter[K, E]] {
-    val num = implicitly[Numeric[E]]
     override def combine(x: GCounter[K, E], y: GCounter[K, E]): GCounter[K, E] = {
-      val keys: Set[K] = x.state.keySet ++ y.state.keySet
+      val num = implicitly[Numeric[E]]
+      val keys = x.state.keySet ++ y.state.keySet
       def fill(keys: Set[K], a: Map[K, E], b: Map[K, E], result: Map[K, E] = Map.empty): Map[K, E] =
         if (keys.isEmpty) {
           result
