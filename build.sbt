@@ -49,3 +49,5 @@ licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"
 headers := Map(
   "scala" -> Apache2_0("2016", "Sergey Ukustov, Konstantin Makarychev")
 )
+
+scalacOptions := Seq("-feature")
