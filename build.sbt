@@ -1,4 +1,5 @@
 import sbtrelease.ReleaseStateTransformations._
+import de.heikoseeberger.sbtheader.license.Apache2_0
 
 name := "crdt"
 
@@ -42,3 +43,9 @@ publishTo := {
 }
 
 credentials += Credentials(new File("credentials.properties"))
+
+licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+
+headers := Map(
+  "scala" -> Apache2_0("2016", "Sergey Ukustov, Konstantin Makarychev")
+)
