@@ -15,10 +15,10 @@ libraryDependencies += "com.machinomy" %% "crdt" % "0.0.3"
 ## Usage
 
 Eventually consistent system comprises of machines, that work together. They have to maintain a shared global state.
-CAP theorem [[CAP](#CAP)] limits properties of the state could be supported. Some applications permit to loosen Consistency
+CAP theorem [[GILBERT2002](#GILBERT2002)] limits properties of the state could be supported. Some applications permit to loosen Consistency
 in favour of Availability and Partitioning. This leads to eventually consistent systems.
 
-Conflict-free Replicated Data Type is a data structure designed to support eventual consistency [[SHAPIRO](#SHAPIRO)]. A machine that belongs to the system maintains a local replica of the global state.
+Conflict-free Replicated Data Type is a data structure designed to support eventual consistency [[SHAPIRO2011](#SHAPIRO2011)]. A machine that belongs to the system maintains a local replica of the global state.
 Properties of CRDT guarantee the replicas converge to a common state. That makes the data structure
 support simultaneous operations sustainable to network disturbancy.
 
@@ -70,5 +70,5 @@ This code is open source software licensed under the [Mozilla Public License v2.
 
 ## References
 
-* <a name="CAP">[CAP]</a> [Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services](http://dl.acm.org/citation.cfm?id=564601)
-* <a name="SHAPIRO">[SHAPIRO]</a> [A comprehensive study of Convergent and Commutative Replicated Data Types](https://hal.inria.fr/inria-00555588/en/)
+* <a name="GILBERT2002">[GILBERT2002]</a> [Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services](http://dl.acm.org/citation.cfm?id=564601)
+* <a name="SHAPIRO2011">[SHAPIRO2011]</a> [A comprehensive study of Convergent and Commutative Replicated Data Types](https://hal.inria.fr/inria-00555588/en/)
