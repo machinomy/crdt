@@ -16,6 +16,7 @@
 
 package com.machinomy.crdt.op
 
+import scala.language.higherKinds
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import scalax.collection.GraphPredef._
