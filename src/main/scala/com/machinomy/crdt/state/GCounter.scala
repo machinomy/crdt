@@ -107,6 +107,11 @@ object GCounter {
     }
   }
 
+  /** Implements [[cats.kernel.PartialOrder]] type class for [[GCounter]].
+    *
+    * @tparam R Replica identifier
+    * @tparam E Counter element, must behave like [[scala.math.Numeric]]
+    */
   implicit def partialOrder[R, E](implicit num: Numeric[E]) = new PartialOrder[GCounter[R, E]] {
     override def partialCompare(x: GCounter[R, E], y: GCounter[R, E]): Double = (lteqv(x, y), lteqv(y, x)) match {
       case (true, false) => 1
@@ -124,7 +129,12 @@ object GCounter {
     }
   }
 
-  implicit def eq[R, E](implicit num: Numeric[E]) = new Eq[GCounter[R, E]] {
+  /** Implements [[cats.kernel.Eq]] type class for [[GCounter]].
+    *
+    * @tparam R Replica identifier
+    * @tparam E Counter element, must behave like [[scala.math.Numeric]]
+    */
+  implicit def eq[R, E: Numeric] = new Eq[GCounter[R, E]] {
     override def eqv(x: GCounter[R, E], y: GCounter[R, E]): Boolean = implicitly[PartialOrder[GCounter[R, E]]].eqv(x, y)
   }
 
