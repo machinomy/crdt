@@ -40,21 +40,21 @@ As the name implies, it is an operation, like `add` or `remove`, or full state.
 
 ### State-based CRDT
 
-State-based CRDT is a data structure that supports operation `merge`, or `join` for replicas so that:
+State-based CRDT is a data structure that supports operation `combine`, or `join` for replicas so that:
 
-* `a merge (b merge c) == (a merge b) merge c`,
-* `a merge b == b merge a`,
-* `a merge a == a`.
+* `a combine (b combine c) == (a combine b) combine c`,
+* `a combine b == b combine a`,
+* `a combine a == a`.
 
 Data structure like this is a join-semilattice. We could derive a partial order on the replicas. We could say if `a ≤ b`. This effectively means state-based CRDTs converge to some value, the least upper bound. It gives another name then: Con<b>v</b>ergent Replicated Data Type, or C<b>v</b>RDT.
 
 ![State-based CRDT Flow](doc/images/state_based_crdt_flow.png)
 
-`merge` operation resolves any conflicts that happen between the replicas by following a formal rule. The rule differs among the types. A developer is responsible for choosing the right data structure for her need.
+`combine` operation resolves any conflicts that happen between the replicas by following a formal rule. The rule differs among the types. A developer is responsible for choosing the right data structure for her need.
 
 #### G-Counter
 
-Short for grow-only counter. It could be incremented only. The merge takes the maximum count for each replica. Value is the sum of all replicas.
+Short for grow-only counter. It could be incremented only. The combine takes the maximum count for each replica. Value is the sum of all replicas.
 
 Say, replica id is `Int`, and GCounter manages `Int` replica counters as well:
 
@@ -66,10 +66,10 @@ import cats._
 val counter = Monoid[GCounter[Int, Int]].empty // empty G-Counter
 val firstReplica = counter + (1 -> 1) // increment replica 1
 val secondReplica = counter + (2 -> 2) // increment replica 2
-val firstReplicaMerged = firstReplica |+| secondReplica // merge
-val secondReplicaMerged = secondReplica |+| firstReplica // merge
+val firstReplicacombined = firstReplica |+| secondReplica // combine
+val secondReplicacombined = secondReplica |+| firstReplica // combine
 
-firstReplicaMerged == secondReplicaMerged // the result is independent of merge order
+firstReplicacombined == secondReplicacombined // the result is independent of combine order
 ```
 
 #### PN-Counter
@@ -78,7 +78,7 @@ TODO
 
 #### G-Set
 
-Short for grow-only set. Supports only addition of an element. `merge` operation is essentially a set union,
+Short for grow-only set. Supports only addition of an element. `combine` operation is essentially a set union,
 which is commutative and convergent.
 
 ```scala
@@ -89,10 +89,10 @@ import cats._
 val counter = Monoid[GSet[Int]].empty // empty G-Set
 val firstReplica = counter + 1 // add element
 val secondReplica = counter + 2 // add element
-val firstReplicaMerged = firstReplica |+| secondReplica // merge
-val secondReplicaMerged = secondReplica |+| firstReplica // merge
+val firstReplicacombined = firstReplica |+| secondReplica // combine
+val secondReplicacombined = secondReplica |+| firstReplica // combine
 
-firstReplicaMerged == secondReplicaMerged // the result is independent of merge order
+firstReplicacombined == secondReplicacombined // the result is independent of combine order
 ```
 
 #### GT-Set
