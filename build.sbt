@@ -26,7 +26,6 @@ releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   runClean,
   runTest,
-  whenRelease(commitReleaseVersion),
   whenRelease(tagRelease),
   publishArtifacts,
   whenRelease(pushChanges)
