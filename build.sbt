@@ -47,7 +47,7 @@ credentials += Credentials(new File("credentials.properties"))
 licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
 headers := Map(
-  "scala" -> Apache2_0("2016", "Sergey Ukustov, Konstantin Makarychev")
+  "scala" -> Apache2_0("2016", "Machinomy")
 )
 
 autoAPIMappings := true
