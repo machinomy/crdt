@@ -50,4 +50,8 @@ headers := Map(
   "scala" -> Apache2_0("2016", "Sergey Ukustov, Konstantin Makarychev")
 )
 
+autoAPIMappings := true
+
 scalacOptions := Seq("-feature")
+
+scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits")

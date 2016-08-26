@@ -18,52 +18,94 @@ package com.machinomy.crdt.state
 
 import cats.kernel.Semilattice
 
-case class GCounter[K, E : Numeric](state: Map[K, E] = Map.empty[K, E]) extends Convergent[E, E] {
-  type Self = GCounter[K, E]
+/** Grow-only counter. Could be incremented only.
+  * The merge takes the maximum count for each replica.
+  * Value is the sum of all replicas.
+  *
+  * @tparam R Replica identifier
+  * @tparam E Counter element, must behave like [[scala.math.Numeric]]
+  * @see [[com.machinomy.crdt.state.GCounter.semilattice]] Behaves like a [[cats.kernel.Semilattice]]
+  * @example
+  * {{{
+  *   import com.machinomy.crdt.state.GCounter
+  *   import cats.syntax.all._
+  *
+  *   val counter = GCounter[Int, Int]()
+  *   val firstReplica = counter + (1 -> 1)
+  *   val secondReplica = counter + (2 -> 2)
+  *   val firstReplicaMerged = firstReplica |+| secondReplica
+  *   val secondReplicaMerged = secondReplica |+| firstReplica
+  *
+  *   firstReplicaMerged == secondReplicaMerged
+  * }}}
+  */
+case class GCounter[R, E](state: Map[R, E] = Map.empty[R, E])(implicit num: Numeric[E]) extends Convergent[E, E] {
+  type Self = GCounter[R, E]
 
-  def +(i: (K, E)): Self = increment(i._1, i._2)
+  /** Increment value for replica `pair._1` by `pair._2`. Only positive values are allowed.
+    *
+    * @see [[increment]]
+    * @param pair Replica identifier
+    * @return New GCounter state
+    */
+  def +(pair: (R, E)): Self = increment(pair._1, pair._2)
 
-  def increment(key: K, delta: E): Self = {
-    val num = implicitly[Numeric[E]]
+  /** Increment value for replica `replicaId` by `delta`. Only positive values are allowed.
+    *
+    * @see [[+]]
+    * @param replicaId Replica identifier.
+    * @param delta     Increment of a counter
+    * @return New GCounter state
+    */
+  def increment(replicaId: R, delta: E): Self = {
     require(num.gteq(delta, num.zero), "Can only increment GCounter")
-
     if (num.equiv(delta, num.zero)) {
       this
     } else {
-      state.get(key) match {
-        case Some(value) => new GCounter[K, E](state.updated(key, num.plus(value, delta)))
-        case None => new GCounter[K, E](state.updated(key, delta))
+      state.get(replicaId) match {
+        case Some(value) => new GCounter[R, E](state.updated(replicaId, num.plus(value, delta)))
+        case None => new GCounter[R, E](state.updated(replicaId, delta))
       }
     }
   }
 
-  def isEmpty = state.isEmpty
+  /** Check if empty.
+    *
+    * @return True if no replicas.
+    */
+  def isEmpty: Boolean = state.isEmpty
 
-  def get(key: K): E = {
-    val num = implicitly[Numeric[E]]
-    state.getOrElse(key, num.zero)
-  }
+  /** Value for `replicaId`, or zero if absent.
+    *
+    * @param replicaId Replica identifier
+    * @return
+    */
+  def get(replicaId: R): E = state.getOrElse(replicaId, num.zero)
 
+  /** @return Value of the counter.
+    */
   override def value: E = state.values.sum
-
-  val num = implicitly[Numeric[E]]
 }
 
 object GCounter {
-  implicit def semilattice[K, E: Numeric] = new Semilattice[GCounter[K, E]] {
-    override def combine(x: GCounter[K, E], y: GCounter[K, E]): GCounter[K, E] = {
-      val num = implicitly[Numeric[E]]
-      val keys = x.state.keySet ++ y.state.keySet
-      def fill(keys: Set[K], a: Map[K, E], b: Map[K, E], result: Map[K, E] = Map.empty): Map[K, E] =
-        if (keys.isEmpty) {
+  /** Implements [[cats.kernel.Semilattice]] type class for [[GCounter]].
+    *
+    * @tparam R Replica identifier
+    * @tparam E Counter element, must behave like [[scala.math.Numeric]]
+    */
+  implicit def semilattice[R, E](implicit num: Numeric[E]) = new Semilattice[GCounter[R, E]] {
+    override def combine(x: GCounter[R, E], y: GCounter[R, E]): GCounter[R, E] = {
+      def fill(ids: Set[R], a: Map[R, E], b: Map[R, E], result: Map[R, E] = Map.empty): Map[R, E] =
+        if (ids.isEmpty) {
           result
         } else {
-          val key = keys.head
+          val key = ids.head
           val valueA = a.getOrElse(key, num.zero)
           val valueB = b.getOrElse(key, num.zero)
-          fill(keys.tail, a, b, result.updated(key, num.max(valueA, valueB)))
+          fill(ids.tail, a, b, result.updated(key, num.max(valueA, valueB)))
         }
-      GCounter(fill(keys, x.state, y.state))
+      val ids = x.state.keySet ++ y.state.keySet
+      GCounter(fill(ids, x.state, y.state))
     }
   }
 }

@@ -40,6 +40,8 @@ State-based CRDT is a data structure that supports operation `merge`, or `join` 
 
 Data structure like this is a join-semilattice. We could derive a partial order on the replicas. We could say if `a ≤ b`. This effectively means state-based CRDTs converge to some value, the least upper bound. It gives another name then: Con<b>v</b>ergent Replicated Data Type, or C<b>v</b>RDT.
 
+![State-based CRDT Flow](doc/images/state_based_crdt_flow.png)
+
 `merge` operation resolves any conflicts that happen between the replicas by following a formal rule. The rule differs among the types. A developer is responsible for choosing the right data structure for her need.
 
 #### GCounter
@@ -57,6 +59,7 @@ val firstReplica = counter + (1 -> 1)
 val secondReplica = counter + (2 -> 2)
 val firstReplicaMerged = firstReplica |+| secondReplica
 val secondReplicaMerged = secondReplica |+| firstReplica
+
 firstReplicaMerged == secondReplicaMerged
 ```
 
