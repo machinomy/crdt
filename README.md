@@ -7,9 +7,9 @@ Comprehensive collection of data types for eventually consistent systems.
 In your `build.sbt` add
 
 ```scala
-resolvers += "Machinomy" at "http://artifactory.machinomy.com/artifactory/snapshot"
+resolvers += "Machinomy" at "http://artifactory.machinomy.com/artifactory/release"
 
-libraryDependencies += "com.machinomy" %% "crdt" % "0.0.2-SNAPSHOT"
+libraryDependencies += "com.machinomy" %% "crdt" % "0.0.2"
 ```
 
 ## Usage
