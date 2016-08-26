@@ -12,7 +12,7 @@ resolvers += "Machinomy" at "http://artifactory.machinomy.com/artifactory/releas
 libraryDependencies += "com.machinomy" %% "crdt" % "0.0.2"
 ```
 
-or 
+or if you like to be on a bleeding edge:
 
 ```scala
 resolvers += "Machinomy" at "http://artifactory.machinomy.com/artifactory/snapshot"
