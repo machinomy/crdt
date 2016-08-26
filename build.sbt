@@ -19,6 +19,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.9" % "test"
 )
 
+releaseUseGlobalVersion := false
+
 def whenRelease(releaseStep: ReleaseStep): ReleaseStep =
   releaseStep.copy(state => if (Project.extract(state).get(isSnapshot)) state else releaseStep.action(state))
 
