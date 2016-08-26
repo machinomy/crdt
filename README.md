@@ -9,7 +9,7 @@ In your `build.sbt` add
 ```scala
 resolvers += "Machinomy" at "http://artifactory.machinomy.com/artifactory/snapshot"
 
-libraryDependencies += "com.machinomy" %% "crdt" % "0.0.3"
+libraryDependencies += "com.machinomy" %% "crdt" % "0.0.2-SNAPSHOT"
 ```
 
 ## Usage
