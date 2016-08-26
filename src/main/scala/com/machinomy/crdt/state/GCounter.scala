@@ -19,26 +19,26 @@ package com.machinomy.crdt.state
 import cats.kernel.{Eq, Monoid, PartialOrder}
 
 /** Grow-only counter. Could be incremented only.
-  * The merge takes the maximum count for each replica.
+  * `combine` operation takes the maximum count for each replica.
   * Value is the sum of all replicas.
   *
   * @tparam R Replica identifier
   * @tparam E Counter element, must behave like [[scala.math.Numeric]]
   * @see [[com.machinomy.crdt.state.GCounter.monoid]] Behaves like a [[cats.kernel.Monoid]]
   * @see [[com.machinomy.crdt.state.GCounter.partialOrder]] Behaves like a [[cats.kernel.PartialOrder]]
-  * @see [[com.machinomy.crdt.state.GCounter.eq]] Behaves like a [[cats.kernel.Eq]]
   * @example
   * {{{
   *   import com.machinomy.crdt.state.GCounter
   *   import cats.syntax.all._
+  *   import cats._
   *
-  *   val counter = GCounter[Int, Int]()
+  *   val counter = Monoid[GCounter[Int, Int]].empty
   *   val firstReplica = counter + (1 -> 1)
   *   val secondReplica = counter + (2 -> 2)
-  *   val firstReplicaMerged = firstReplica |+| secondReplica
-  *   val secondReplicaMerged = secondReplica |+| firstReplica
+  *   val firstReplicaCombined = firstReplica |+| secondReplica
+  *   val secondReplicaCombined = secondReplica |+| firstReplica
   *
-  *   firstReplicaMerged == secondReplicaMerged
+  *   firstReplicaCombined == secondReplicaCombined
   * }}}
   */
 case class GCounter[R, E](state: Map[R, E])(implicit num: Numeric[E]) extends Convergent[E, E] {
@@ -48,7 +48,7 @@ case class GCounter[R, E](state: Map[R, E])(implicit num: Numeric[E]) extends Co
     *
     * @see [[increment]]
     * @param pair Replica identifier
-    * @return New GCounter state
+    * @return Updated GCounter
     */
   def +(pair: (R, E)): Self = increment(pair._1, pair._2)
 
@@ -57,7 +57,7 @@ case class GCounter[R, E](state: Map[R, E])(implicit num: Numeric[E]) extends Co
     * @see [[+]]
     * @param replicaId Replica identifier.
     * @param delta     Increment of a counter
-    * @return New GCounter state
+    * @return Updated GCounter
     */
   def increment(replicaId: R, delta: E): Self = {
     require(num.gteq(delta, num.zero), "Can only increment GCounter")
@@ -113,11 +113,13 @@ object GCounter {
     * @tparam E Counter element, must behave like [[scala.math.Numeric]]
     */
   implicit def partialOrder[R, E](implicit num: Numeric[E]) = new PartialOrder[GCounter[R, E]] {
-    override def partialCompare(x: GCounter[R, E], y: GCounter[R, E]): Double = (lteqv(x, y), lteqv(y, x)) match {
-      case (true, false) => 1
-      case (false, true) => -1
-      case (_, _) => 0
-    }
+    override def partialCompare(x: GCounter[R, E], y: GCounter[R, E]): Double =
+      (lteqv(x, y), lteqv(y, x)) match {
+        case (true, true) => 0
+        case (false, true) => 1
+        case (true, false) => -1
+        case (false, false) => Double.NaN
+      }
 
     override def lteqv(x: GCounter[R, E], y: GCounter[R, E]): Boolean = {
       val ids = x.state.keySet ++ y.state.keySet
@@ -127,15 +129,6 @@ object GCounter {
         num.lteq(xValue, yValue)
       }
     }
-  }
-
-  /** Implements [[cats.kernel.Eq]] type class for [[GCounter]].
-    *
-    * @tparam R Replica identifier
-    * @tparam E Counter element, must behave like [[scala.math.Numeric]]
-    */
-  implicit def eq[R, E: Numeric] = new Eq[GCounter[R, E]] {
-    override def eqv(x: GCounter[R, E], y: GCounter[R, E]): Boolean = implicitly[PartialOrder[GCounter[R, E]]].eqv(x, y)
   }
 
   def apply[R, E: Numeric](): GCounter[R, E] = new GCounter[R, E](Map.empty[R, E])

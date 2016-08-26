@@ -1,9 +1,12 @@
 package com.machinomy.crdt.state
 
+import cats.kernel.Eq
 import org.scalatest.FunSuite
 import cats.syntax.all._
 
 class GSetSuite extends FunSuite {
+  val eq = implicitly[Eq[GSet[Int]]]
+
   test("Just created GSet is empty") {
     val gSet = GSet[Int]()
     assert(gSet.value.isEmpty)
@@ -27,12 +30,12 @@ class GSetSuite extends FunSuite {
   test("equality") {
     val a = GSet[Int]()
     val b = GSet[Int]()
-    assert(a === b)
+    assert(eq.eqv(a, b))
 
     val a1 = a + 1
     assert(a1 !== b)
 
     val b1 = b + 1
-    assert(a1 === b1)
+    assert(eq.eqv(a1, b1))
   }
 }
