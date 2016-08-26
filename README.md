@@ -44,28 +44,100 @@ Data structure like this is a join-semilattice. We could derive a partial order 
 
 `merge` operation resolves any conflicts that happen between the replicas by following a formal rule. The rule differs among the types. A developer is responsible for choosing the right data structure for her need.
 
-#### GCounter
+#### G-Counter
 
 Short for grow-only counter. It could be incremented only. The merge takes the maximum count for each replica. Value is the sum of all replicas.
 
 Say, replica id is `Int`, and GCounter manages `Int` replica counters as well:
 
 ```scala
-import com.machinomy.crdt.state.GCounter
+import com.machinomy.crdt.state._
 import cats.syntax.all._
+import cats._
 
-val counter = GCounter[Int, Int]()
-val firstReplica = counter + (1 -> 1)
-val secondReplica = counter + (2 -> 2)
-val firstReplicaMerged = firstReplica |+| secondReplica
-val secondReplicaMerged = secondReplica |+| firstReplica
+val counter = Monoid[GCounter[Int, Int]].empty // empty G-Counter
+val firstReplica = counter + (1 -> 1) // increment replica 1
+val secondReplica = counter + (2 -> 2) // increment replica 2
+val firstReplicaMerged = firstReplica |+| secondReplica // merge
+val secondReplicaMerged = secondReplica |+| firstReplica // merge
 
-firstReplicaMerged == secondReplicaMerged
+firstReplicaMerged == secondReplicaMerged // the result is independent of merge order
 ```
+
+#### PN-Counter
+
+TODO
+
+#### G-Set
+
+Short for grow-only set. Supports only addition of an element. `merge` operation is essentially a set union,
+which is commutative and convergent.
+
+```scala
+import com.machinomy.crdt.state._
+import cats.syntax.all._
+import cats._
+
+val counter = Monoid[GSet[Int]].empty // empty G-Set
+val firstReplica = counter + 1 // add element
+val secondReplica = counter + 2 // add element
+val firstReplicaMerged = firstReplica |+| secondReplica // merge
+val secondReplicaMerged = secondReplica |+| firstReplica // merge
+
+firstReplicaMerged == secondReplicaMerged // the result is independent of merge order
+```
+
+#### GT-Set
+
+TODO
+
+#### MC-Set
+
+TODO
+
+#### OR-Set
+
+TODO
+
+#### TP-Set
+
+TODO
+
+#### LWW-Element-Set
+
+TODO
+
+#### LWW-Register
+
+TODO
 
 ### Operation-based CRDT
 
+TODO
+
+#### Counter
+
+TODO
+
+#### OR-Set
+
+TODO
+
+#### 2P2P-Graph
+
+TODO
+
+#### Add-only Monotonic DAG
+
+TODO
+
+#### Partial Order Graph
+
+TODO
+
 ## To Do
+
+TODO
 
 ## License
 
