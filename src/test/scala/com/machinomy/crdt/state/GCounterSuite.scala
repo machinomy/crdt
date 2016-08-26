@@ -3,8 +3,9 @@ package com.machinomy.crdt.state
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
+import cats.kernel.{Eq, Monoid}
 import org.scalacheck.Gen
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
 import cats.syntax.all._
 import com.machinomy.crdt.state.GCounterSuite.Forward
@@ -13,17 +14,18 @@ import scala.collection.immutable.IndexedSeq
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class GCounterSuite extends FunSuite with PropertyChecks with Matchers {
+class GCounterSuite extends FunSuite with PropertyChecks {
   val replicaGen = Gen.posNum[Int]
   val valueGen = Gen.posNum[Int]
   val counterGen = for {
     id <- replicaGen
     value <- valueGen
   } yield GCounter[Int, Int]() + (id -> value)
+  val eq = implicitly[Eq[GCounter[Int, Int]]]
 
   test("Fresh GCounter is empty") {
     val fresh = GCounter[Int, Int]()
-    assert(fresh.isEmpty)
+    assert(Monoid[GCounter[Int, Int]].isEmpty(fresh))
     assert(fresh.value === 0)
   }
 
@@ -50,25 +52,34 @@ class GCounterSuite extends FunSuite with PropertyChecks with Matchers {
   test("equality") {
     val a = GCounter[Int, Int]()
     val b = GCounter[Int, Int]()
-    assert(a === b)
+    assert(eq.eqv(a, b))
 
     val a1 = a + (1 -> 1)
-    assert(a1 !== b)
+    assert(eq.neqv(a1, b))
     val b1 = b + (1 -> 2)
     assert(a1 !== b1)
+    assert(eq.neqv(a1, b1))
     val a2 = a1 + (1 -> 1)
-    assert(a2 === b1)
+    assert(eq.eqv(a2, b1))
   }
 
   test("associativity") {
-    forAll(Gen.listOfN(3, counterGen)) { case x :: y :: z :: Nil =>
-      (x |+| (y |+| z)) should be((x |+| y) |+| z)
+    forAll(Gen.listOfN(3, counterGen)) {
+      case x :: y :: z :: Nil =>
+        val left = x |+| (y |+| z)
+        val right = (x |+| y) |+| z
+        assert(eq.eqv(left, right))
+      case _ => throw new RuntimeException("This is unexpected, really")
     }
   }
 
   test("commutativity") {
-    forAll(Gen.listOfN(2, counterGen)) { case x :: y :: Nil =>
-      (x |+| y) should be(y |+| x)
+    forAll(Gen.listOfN(2, counterGen)) {
+      case x :: y :: Nil =>
+        val left = x |+| y
+        val right = y |+| x
+        assert(eq.eqv(left, right))
+      case _ => throw new RuntimeException("This is unexpected, really")
     }
   }
 
@@ -76,7 +87,8 @@ class GCounterSuite extends FunSuite with PropertyChecks with Matchers {
     forAll(Gen.listOf(counterGen)) { list =>
       whenever(list.nonEmpty) {
         val counter = list.reduce(_ |+| _)
-        (counter |+| counter) should be(counter)
+        val sum = counter |+| counter
+        assert(eq.eqv(counter, sum))
       }
     }
   }
@@ -92,7 +104,7 @@ class GCounterSuite extends FunSuite with PropertyChecks with Matchers {
       counter = Await.result[GCounter[Int, Int]](response, timeout.duration)
       sum += rand
     }
-    counter.value should be(sum)
+    assert(counter.value === sum)
   }
 }
 

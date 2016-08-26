@@ -16,7 +16,7 @@
 
 package com.machinomy.crdt.state
 
-import cats.kernel.Semilattice
+import cats.kernel.{Eq, Monoid, PartialOrder}
 
 /** Grow-only counter. Could be incremented only.
   * The merge takes the maximum count for each replica.
@@ -24,7 +24,9 @@ import cats.kernel.Semilattice
   *
   * @tparam R Replica identifier
   * @tparam E Counter element, must behave like [[scala.math.Numeric]]
-  * @see [[com.machinomy.crdt.state.GCounter.semilattice]] Behaves like a [[cats.kernel.Semilattice]]
+  * @see [[com.machinomy.crdt.state.GCounter.monoid]] Behaves like a [[cats.kernel.Monoid]]
+  * @see [[com.machinomy.crdt.state.GCounter.partialOrder]] Behaves like a [[cats.kernel.PartialOrder]]
+  * @see [[com.machinomy.crdt.state.GCounter.eq]] Behaves like a [[cats.kernel.Eq]]
   * @example
   * {{{
   *   import com.machinomy.crdt.state.GCounter
@@ -39,7 +41,7 @@ import cats.kernel.Semilattice
   *   firstReplicaMerged == secondReplicaMerged
   * }}}
   */
-case class GCounter[R, E](state: Map[R, E] = Map.empty[R, E])(implicit num: Numeric[E]) extends Convergent[E, E] {
+case class GCounter[R, E](state: Map[R, E])(implicit num: Numeric[E]) extends Convergent[E, E] {
   type Self = GCounter[R, E]
 
   /** Increment value for replica `pair._1` by `pair._2`. Only positive values are allowed.
@@ -69,12 +71,6 @@ case class GCounter[R, E](state: Map[R, E] = Map.empty[R, E])(implicit num: Nume
     }
   }
 
-  /** Check if empty.
-    *
-    * @return True if no replicas.
-    */
-  def isEmpty: Boolean = state.isEmpty
-
   /** Value for `replicaId`, or zero if absent.
     *
     * @param replicaId Replica identifier
@@ -88,12 +84,14 @@ case class GCounter[R, E](state: Map[R, E] = Map.empty[R, E])(implicit num: Nume
 }
 
 object GCounter {
-  /** Implements [[cats.kernel.Semilattice]] type class for [[GCounter]].
+  /** Implements [[cats.kernel.Monoid]] type class for [[GCounter]].
     *
     * @tparam R Replica identifier
     * @tparam E Counter element, must behave like [[scala.math.Numeric]]
     */
-  implicit def semilattice[R, E](implicit num: Numeric[E]) = new Semilattice[GCounter[R, E]] {
+  implicit def monoid[R, E](implicit num: Numeric[E]) = new Monoid[GCounter[R, E]] {
+    override def empty: GCounter[R, E] = new GCounter[R, E](Map.empty[R, E])
+
     override def combine(x: GCounter[R, E], y: GCounter[R, E]): GCounter[R, E] = {
       def fill(ids: Set[R], a: Map[R, E], b: Map[R, E], result: Map[R, E] = Map.empty): Map[R, E] =
         if (ids.isEmpty) {
@@ -108,4 +106,27 @@ object GCounter {
       GCounter(fill(ids, x.state, y.state))
     }
   }
+
+  implicit def partialOrder[R, E](implicit num: Numeric[E]) = new PartialOrder[GCounter[R, E]] {
+    override def partialCompare(x: GCounter[R, E], y: GCounter[R, E]): Double = (lteqv(x, y), lteqv(y, x)) match {
+      case (true, false) => 1
+      case (false, true) => -1
+      case (_, _) => 0
+    }
+
+    override def lteqv(x: GCounter[R, E], y: GCounter[R, E]): Boolean = {
+      val ids = x.state.keySet ++ y.state.keySet
+      ids.forall { id =>
+        val xValue = x.state.getOrElse(id, num.zero)
+        val yValue = y.state.getOrElse(id, num.zero)
+        num.lteq(xValue, yValue)
+      }
+    }
+  }
+
+  implicit def eq[R, E](implicit num: Numeric[E]) = new Eq[GCounter[R, E]] {
+    override def eqv(x: GCounter[R, E], y: GCounter[R, E]): Boolean = implicitly[PartialOrder[GCounter[R, E]]].eqv(x, y)
+  }
+
+  def apply[R, E: Numeric](): GCounter[R, E] = new GCounter[R, E](Map.empty[R, E])
 }
