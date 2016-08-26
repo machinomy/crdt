@@ -3,7 +3,7 @@ import de.heikoseeberger.sbtheader.license.Apache2_0
 
 name := "crdt"
 
-version := "0.0.2"
+version := "0.0.3-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 

@@ -12,6 +12,14 @@ resolvers += "Machinomy" at "http://artifactory.machinomy.com/artifactory/releas
 libraryDependencies += "com.machinomy" %% "crdt" % "0.0.2"
 ```
 
+or 
+
+```scala
+resolvers += "Machinomy" at "http://artifactory.machinomy.com/artifactory/snapshot"
+
+libraryDependencies += "com.machinomy" %% "crdt" % "0.0.3-SNAPSHOT"
+```
+
 ## Usage
 
 Eventually consistent system comprises of machines, that work together. They have to maintain a shared global state.
