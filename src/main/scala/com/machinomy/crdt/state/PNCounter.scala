@@ -16,13 +16,13 @@
 
 package com.machinomy.crdt.state
 
-import cats.kernel.Semilattice
+import cats._
 import cats.syntax.all._
 
-case class PNCounter[K, E: Numeric](increments: GCounter[K, E], decrements: GCounter[K, E]) extends Convergent[E, E] {
-  type Self = PNCounter[K, E]
+case class PNCounter[R, E](increments: GCounter[R, E], decrements: GCounter[R, E])(implicit num: Numeric[E]) extends Convergent[E, E] {
+  type Self = PNCounter[R, E]
 
-  def +(i: (K, E)): Self = {
+  def +(i: (R, E)): Self = {
     val delta = i._2
     if (num.gteq(delta, num.zero)) {
       copy(increments = increments + i)
@@ -32,12 +32,12 @@ case class PNCounter[K, E: Numeric](increments: GCounter[K, E], decrements: GCou
     }
   }
 
-  def -(i: (K, E)): Self = this + i
+  def -(i: (R, E)): Self = this + i
 
-  def get(k: K): E = num.minus(increments.get(k), decrements.get(k))
+  def get(k: R): E = num.minus(increments.get(k), decrements.get(k))
 
-  def table: Map[K, E] = {
-    def fill(keys: Set[K], incs: Map[K, E], decs: Map[K, E], table: Map[K, E] = Map.empty): Map[K, E] =
+  def table: Map[R, E] = {
+    def fill(keys: Set[R], incs: Map[R, E], decs: Map[R, E], table: Map[R, E] = Map.empty): Map[R, E] =
       if (keys.isEmpty) {
         table
       } else {
@@ -47,23 +47,45 @@ case class PNCounter[K, E: Numeric](increments: GCounter[K, E], decrements: GCou
         fill(keys.tail, incs, decs, table.updated(key, num.minus(inc, dec)))
       }
 
-    val keys: Set[K] = increments.state.keySet ++ decrements.state.keySet
+    val keys: Set[R] = increments.state.keySet ++ decrements.state.keySet
     fill(keys, increments.state, decrements.state)
   }
-
-  val num: Numeric[E] = implicitly[Numeric[E]]
 
   override def value: E = num.minus(increments.value, decrements.value)
 }
 
 object PNCounter {
-  def apply[K, E: Numeric](): PNCounter[K, E] = new PNCounter(GCounter[K, E](), GCounter[K, E]())
+  implicit def monoid[R, E: Numeric] = new Monoid[PNCounter[R, E]] {
+    override def empty: PNCounter[R, E] = new PNCounter(Monoid[GCounter[R, E]].empty, Monoid[GCounter[R, E]].empty)
 
-  implicit def semilattice[K, E: Numeric] = new Semilattice[PNCounter[K, E]] {
-    override def combine(x: PNCounter[K, E], y: PNCounter[K, E]): PNCounter[K, E] = {
+    override def combine(x: PNCounter[R, E], y: PNCounter[R, E]): PNCounter[R, E] = {
       val increments = x.increments |+| y.increments
       val decrements = x.decrements |+| y.decrements
-      new PNCounter[K, E](increments, decrements)
+      new PNCounter[R, E](increments, decrements)
+    }
+  }
+
+  implicit def partialOrder[R, E](implicit num: Numeric[E]) = new PartialOrder[PNCounter[R, E]] {
+    override def partialCompare(x: PNCounter[R, E], y: PNCounter[R, E]): Double =
+      (lteqv(x, y), lteqv(y, x)) match {
+        case (true, true) => 0
+        case (false, true) => 1
+        case (true, false) => -1
+        case (false, false) => Double.NaN
+      }
+
+    override def lteqv(x: PNCounter[R, E], y: PNCounter[R, E]): Boolean = {
+      val ids = x.increments.state.keySet ++
+        y.increments.state.keySet ++
+        x.decrements.state.keySet ++
+        y.decrements.state.keySet
+      ids.forall { id =>
+        val xInc = x.increments.state.getOrElse(id, num.zero)
+        val yInc = y.increments.state.getOrElse(id, num.zero)
+        val xDec = x.decrements.state.getOrElse(id, num.zero)
+        val yDec = y.decrements.state.getOrElse(id, num.zero)
+        num.lteq(xInc, yInc) && num.lteq(xDec, yDec)
+      }
     }
   }
 }

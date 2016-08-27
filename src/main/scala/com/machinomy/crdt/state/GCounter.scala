@@ -16,7 +16,7 @@
 
 package com.machinomy.crdt.state
 
-import cats.kernel.{Eq, Monoid, PartialOrder}
+import cats._
 
 /** Grow-only counter. Could be incremented only.
   * `combine` operation takes the maximum count for each replica.
