@@ -107,7 +107,7 @@ object GCounter {
     }
   }
 
-  /** Implements [[cats.kernel.PartialOrder]] type class for [[GCounter]].
+  /** Implements [[cats.PartialOrder]] type class for [[GCounter]].
     *
     * @tparam R Replica identifier
     * @tparam E Counter element, must behave like [[scala.math.Numeric]]
