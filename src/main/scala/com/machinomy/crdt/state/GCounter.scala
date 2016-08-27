@@ -112,22 +112,12 @@ object GCounter {
     * @tparam R Replica identifier
     * @tparam E Counter element, must behave like [[scala.math.Numeric]]
     */
-  implicit def partialOrder[R, E](implicit num: Numeric[E]) = new PartialOrder[GCounter[R, E]] {
-    override def partialCompare(x: GCounter[R, E], y: GCounter[R, E]): Double =
-      (lteqv(x, y), lteqv(y, x)) match {
-        case (true, true) => 0
-        case (false, true) => 1
-        case (true, false) => -1
-        case (false, false) => Double.NaN
-      }
-
-    override def lteqv(x: GCounter[R, E], y: GCounter[R, E]): Boolean = {
-      val ids = x.state.keySet ++ y.state.keySet
-      ids.forall { id =>
-        val xValue = x.state.getOrElse(id, num.zero)
-        val yValue = y.state.getOrElse(id, num.zero)
-        num.lteq(xValue, yValue)
-      }
+  implicit def partialOrder[R, E](implicit num: Numeric[E]) = PartialOrder.byLteqv[GCounter[R, E]] { (x, y) =>
+    val ids = x.state.keySet ++ y.state.keySet
+    ids.forall { id =>
+      val xValue = x.state.getOrElse(id, num.zero)
+      val yValue = y.state.getOrElse(id, num.zero)
+      num.lteq(xValue, yValue)
     }
   }
 

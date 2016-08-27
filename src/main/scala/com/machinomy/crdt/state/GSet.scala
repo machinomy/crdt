@@ -54,17 +54,8 @@ object GSet {
     *
     *  @tparam E Contained element
     */
-  implicit def partialOrder[E] = new PartialOrder[GSet[E]] {
-    override def partialCompare(x: GSet[E], y: GSet[E]): Double =
-      (lteqv(x, y), lteqv(y, x)) match {
-        case (true, true) => 0
-        case (false, true) => 1
-        case (true, false) => -1
-        case (false, false) => Double.NaN
-      }
-
-    override def lteqv(x: GSet[E], y: GSet[E]): Boolean =
-      x.state subsetOf y.state
+  implicit def partialOrder[E] = PartialOrder.byLteqv[GSet[E]] { (x, y) =>
+    x.state subsetOf y.state
   }
 
   def apply[E]() = new GSet[E](Set.empty[E])

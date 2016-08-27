@@ -65,27 +65,17 @@ object PNCounter {
     }
   }
 
-  implicit def partialOrder[R, E](implicit num: Numeric[E]) = new PartialOrder[PNCounter[R, E]] {
-    override def partialCompare(x: PNCounter[R, E], y: PNCounter[R, E]): Double =
-      (lteqv(x, y), lteqv(y, x)) match {
-        case (true, true) => 0
-        case (false, true) => 1
-        case (true, false) => -1
-        case (false, false) => Double.NaN
-      }
-
-    override def lteqv(x: PNCounter[R, E], y: PNCounter[R, E]): Boolean = {
-      val ids = x.increments.state.keySet ++
-        y.increments.state.keySet ++
-        x.decrements.state.keySet ++
-        y.decrements.state.keySet
-      ids.forall { id =>
-        val xInc = x.increments.state.getOrElse(id, num.zero)
-        val yInc = y.increments.state.getOrElse(id, num.zero)
-        val xDec = x.decrements.state.getOrElse(id, num.zero)
-        val yDec = y.decrements.state.getOrElse(id, num.zero)
-        num.lteq(xInc, yInc) && num.lteq(xDec, yDec)
-      }
+  implicit def partialOrder[R, E](implicit num: Numeric[E]) = PartialOrder.byLteqv[PNCounter[R, E]] { (x, y) =>
+    val ids = x.increments.state.keySet ++
+      y.increments.state.keySet ++
+      x.decrements.state.keySet ++
+      y.decrements.state.keySet
+    ids.forall { id =>
+      val xInc = x.increments.state.getOrElse(id, num.zero)
+      val yInc = y.increments.state.getOrElse(id, num.zero)
+      val xDec = x.decrements.state.getOrElse(id, num.zero)
+      val yDec = y.decrements.state.getOrElse(id, num.zero)
+      num.lteq(xInc, yInc) && num.lteq(xDec, yDec)
     }
   }
 }
