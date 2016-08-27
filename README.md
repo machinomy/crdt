@@ -74,7 +74,22 @@ firstReplicacombined == secondReplicacombined // the result is independent of co
 
 #### PN-Counter
 
-TODO
+A counter that could be increased, and decreased. Effectively consists of two G-Counters: for increases, and decreases. Value is a sum of all increases minus
+all the decreases.
+
+```
+import com.machinomy.crdt.state._
+import cats.syntax.all._
+import cats._
+
+val counter = Monoid[PNCounter[Int, Int]].empty // fresh PN-Counter
+val firstReplica = counter + (1 -> 1) // increment replica 1
+val secondReplica = counter + (2 -> -2) // decrement replica 2
+val firstReplicacombined = firstReplica |+| secondReplica // combine
+val secondReplicacombined = secondReplica |+| firstReplica // combine
+firstReplicacombined == secondReplicacombined // the result is independent of combine order
+firstReplicacombined.value == -1
+```
 
 #### G-Set
 
