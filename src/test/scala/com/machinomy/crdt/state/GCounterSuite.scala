@@ -1,18 +1,10 @@
 package com.machinomy.crdt.state
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import akka.pattern.ask
-import akka.util.Timeout
 import cats.kernel.{Eq, Monoid}
+import cats.syntax.all._
 import org.scalacheck.Gen
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
-import cats.syntax.all._
-import com.machinomy.crdt.state.GCounterSuite.Forward
-
-import scala.collection.immutable.IndexedSeq
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class GCounterSuite extends FunSuite with PropertyChecks {
   val replicaGen = Gen.posNum[Int]
@@ -87,39 +79,8 @@ class GCounterSuite extends FunSuite with PropertyChecks {
     forAll(Gen.listOf(counterGen)) { list =>
       whenever(list.nonEmpty) {
         val counter = list.reduce(_ |+| _)
-        val sum = counter |+| counter
-        assert(eq.eqv(counter, sum))
+        assert(eq.eqv(counter, counter |+| counter))
       }
     }
   }
-
-  test("bounce") {
-    val system = ActorSystem("gcounter")
-    val actors: IndexedSeq[(ActorRef, Int)] = for (i <- 1 to 10) yield (system.actorOf(GCounterSuite.Pass.props(i)), valueGen.sample.getOrElse(1))
-    var counter = GCounter[Int, Int]()
-    var sum: Int= 0
-    implicit val timeout = Timeout(3.seconds)
-    for ((actor, rand) <- actors) {
-      val response = actor.ask(Forward(counter, rand)).mapTo[GCounter[Int, Int]]
-      counter = Await.result[GCounter[Int, Int]](response, timeout.duration)
-      sum += rand
-    }
-    assert(counter.value === sum)
-  }
-}
-
-object GCounterSuite {
-  class Pass(id: Int) extends Actor {
-    override def receive: Receive = {
-      case Forward(counter, number) =>
-        val nextCounter = counter + (id -> number)
-        sender ! nextCounter
-    }
-  }
-
-  object Pass {
-    def props(id: Int) = Props(classOf[Pass], id)
-  }
-
-  case class Forward(counter: GCounter[Int, Int], number: Int)
 }
