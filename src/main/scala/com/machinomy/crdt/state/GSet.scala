@@ -39,7 +39,7 @@ class GSet[E](val state: Set[E]) extends Convergent[E, Set[E]] {
 }
 
 object GSet {
-  /** Implements [[cats.kernel.Monoid]] type class for [[GSet]].
+  /** Implements [[cats.Monoid]] type class for [[GSet]].
     *
     * @tparam E Contained element
     */
@@ -50,7 +50,7 @@ object GSet {
       new GSet[E](x.value ++ y.value)
   }
 
-  /** Implements [[cats.kernel.PartialOrder]] type class for [[GCounter]].
+  /** Implements [[cats.PartialOrder]] type class for [[GSet]].
     *
     *  @tparam E Contained element
     */
