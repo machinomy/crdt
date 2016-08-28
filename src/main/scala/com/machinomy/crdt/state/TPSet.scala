@@ -16,34 +16,70 @@
 
 package com.machinomy.crdt.state
 
-import cats.kernel.Semilattice
+import cats._
 import cats.syntax.all._
 
 /**
-  * 2P-Set, really, or two-phase value.
+  * 2P-Set, or two-phase set. Contains one [[GSet]] for additions, and one for removals
+  * Removing of an element is allowed, only if it is present in the set of additions.
+  * `Combine` operation combines additions and removals as a GSet.
   *
+  * @tparam E Contained element
+  * @see [[com.machinomy.crdt.state.TPSet.monoid]] Behaves like a [[cats.Monoid]]
+  * @see [[com.machinomy.crdt.state.TPSet.partialOrder]] Behaves like a [[cats.PartialOrder]]
+  * @see Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011).
+  *      Conflict-free replicated data types.
+  *      In Proceedings of the 13th international conference on Stabilization, safety, and security of distributed systems (pp. 386–400).
+  *      Grenoble, France: Springer-Verlag.
+  *      Retrieved from [[http://dl.acm.org/citation.cfm?id=2050642]]
   */
 case class TPSet[E](additions: GSet[E] = GSet[E](), removals: GSet[E] = GSet[E]()) extends Convergent[E, Set[E]] {
   type Self = TPSet[E]
 
-  def +(e: E): TPSet[E] = copy(additions = additions + e)
+  /** Add element to the set.
+    *
+    * @return Updated TPSet.
+    */
+  def +(element: E): TPSet[E] = copy(additions = additions + element)
 
-  def -(e: E): TPSet[E] = if (additions.value.contains(e)) {
-    copy(removals = removals + e)
+  /** Remove element from the set.
+    *
+    * @return Updated TPSet.
+    */
+  def -(element: E): TPSet[E] = if (additions.value.contains(element)) {
+    copy(removals = removals + element)
   } else {
     this
   }
 
+  /** @return Value of the set.
+    */
   override def value: Set[E] = additions.value -- removals.value
 }
 
 object TPSet {
-  implicit def semilattice[E] = new Semilattice[TPSet[E]] {
+  /** Implements [[cats.Monoid]] type class for [[TPSet]].
+    *
+    * @tparam E Contained element
+    */
+  implicit def monoid[E](implicit gSetMonoid: Monoid[GSet[E]]) = new Monoid[TPSet[E]] {
+    override def empty: TPSet[E] = new TPSet[E](gSetMonoid.empty, gSetMonoid.empty)
+
     override def combine(x: TPSet[E], y: TPSet[E]): TPSet[E] = {
       val additions = x.additions |+| y.additions
       val removals = x.removals |+| y.removals
       new TPSet[E](additions, removals)
     }
+  }
+
+  /** Implements [[cats.PartialOrder]] type class for [[TPSet]].
+    *
+    *  @tparam E Contained element
+    */
+  implicit def partialOrder[E](implicit gSetPartialOrder: PartialOrder[GSet[E]]) = PartialOrder.byLteqv[TPSet[E]] { (x, y) =>
+    val additions = gSetPartialOrder.lteqv(x.additions, y.additions)
+    val removals = gSetPartialOrder.lteqv(x.removals, y.removals)
+    additions && removals
   }
 
   def apply[E](elements: Set[E]): TPSet[E] = TPSet[E](GSet[E](elements))
