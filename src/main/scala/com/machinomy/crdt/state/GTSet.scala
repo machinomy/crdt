@@ -25,6 +25,7 @@ import cats._
   * @tparam T Time
   * @see [[com.machinomy.crdt.state.GTSet.monoid]] Behaves like [[cats.Monoid]]
   * @see [[com.machinomy.crdt.state.GTSet.partialOrder]] Behaves like [[cats.PartialOrder]]
+  * @todo Find a paper to cite.
   */
 case class GTSet[E, T](state: Map[E, T] = Map.empty[E, T])(implicit tombStone: TombStone[T]) extends Convergent[E, Set[E]] {
   type Self = GTSet[E, T]

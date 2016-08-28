@@ -24,8 +24,6 @@ import cats._
   *
   * @tparam R Replica identifier
   * @tparam E Counter element, must behave like [[scala.math.Numeric]]
-  * @see [[com.machinomy.crdt.state.GCounter.monoid]] Behaves like a [[cats.kernel.Monoid]]
-  * @see [[com.machinomy.crdt.state.GCounter.partialOrder]] Behaves like a [[cats.kernel.PartialOrder]]
   * @example
   * {{{
   *   import com.machinomy.crdt.state.GCounter
@@ -40,6 +38,13 @@ import cats._
   *
   *   firstReplicaCombined == secondReplicaCombined
   * }}}
+  * @see [[com.machinomy.crdt.state.GCounter.monoid]] Behaves like a [[cats.kernel.Monoid]]
+  * @see [[com.machinomy.crdt.state.GCounter.partialOrder]] Behaves like a [[cats.kernel.PartialOrder]]
+  * @see Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011).
+  *      Conflict-free replicated data types.
+  *      In Proceedings of the 13th international conference on Stabilization, safety, and security of distributed systems (pp. 386–400).
+  *      Grenoble, France: Springer-Verlag.
+  *      Retrieved from [[http://dl.acm.org/citation.cfm?id=2050642]]
   */
 case class GCounter[R, E](state: Map[R, E])(implicit num: Numeric[E]) extends Convergent[E, E] {
   type Self = GCounter[R, E]

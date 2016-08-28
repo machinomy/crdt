@@ -23,6 +23,11 @@ import cats._
   * @tparam E Contained element
   * @see [[com.machinomy.crdt.state.GSet.monoid]] Behaves like a [[cats.Monoid]]
   * @see [[com.machinomy.crdt.state.GSet.partialOrder]] Behaves like a [[cats.PartialOrder]]
+  * @see Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011).
+  *      Conflict-free replicated data types.
+  *      In Proceedings of the 13th international conference on Stabilization, safety, and security of distributed systems (pp. 386–400).
+  *      Grenoble, France: Springer-Verlag.
+  *      Retrieved from [[http://dl.acm.org/citation.cfm?id=2050642]]
   */
 class GSet[E](val state: Set[E]) extends Convergent[E, Set[E]] {
   type Self = GSet[E]
