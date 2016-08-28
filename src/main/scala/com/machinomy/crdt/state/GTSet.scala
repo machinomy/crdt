@@ -16,28 +16,43 @@
 
 package com.machinomy.crdt.state
 
-import cats.kernel.Semilattice
+import cats._
 
 /**
-  * G-Set that tracks time of addition.
+  * G-Set that tracks time of addition. `Combine` operation takes the value added last.
   *
+  * @tparam E Contained element
+  * @tparam T Time
+  * @see [[com.machinomy.crdt.state.GTSet.monoid]] Behaves like [[cats.Monoid]]
+  * @see [[com.machinomy.crdt.state.GTSet.partialOrder]] Behaves like [[cats.PartialOrder]]
   */
-case class GTSet[E, T: TombStone : Ordering](state: Map[E, T] = Map.empty[E, T]) extends Convergent[E, Set[E]] {
+case class GTSet[E, T](state: Map[E, T] = Map.empty[E, T])(implicit tombStone: TombStone[T]) extends Convergent[E, Set[E]] {
   type Self = GTSet[E, T]
 
-  val tombStone = implicitly[TombStone[T]]
-  val ordering = implicitly[Ordering[T]]
+  /** Add `element` to the set using the current TombStone.
+    *
+    * @return Updated GTSet.
+    */
+  def +(element: E): Self = new GTSet[E, T](state + (element -> tombStone.next))
 
-  def +(e: E): Self = new GTSet[E, T](state + (e -> tombStone.next))
+  /** Add element `pair._1` with provided tomb stone `pair._2`.
+    *
+    * @return Updated GTSet.
+    */
+  def +(pair: (E, T)): Self = new GTSet[E, T](state + pair)
 
-  def +(tuple: (E, T)): Self = new GTSet[E, T](state + tuple)
-
+  /** @return Value of the set.
+    */
   override def value: Set[E] = state.keySet
 }
 
 object GTSet {
-  implicit def semilattice[E, T: TombStone : Ordering] = new Semilattice[GTSet[E, T]] {
-    val ordering = implicitly[Ordering[T]]
+  /** Implements [[cats.Monoid]] type class for [[GTSet]].
+    *
+    * @tparam E Contained element
+    */
+  implicit def monoid[E, T: TombStone](implicit ordering: Ordering[T]) = new Monoid[GTSet[E, T]] {
+    override def empty: GTSet[E, T] = new GTSet[E, T](Map.empty[E, T])
 
     override def combine(x: GTSet[E, T], y: GTSet[E, T]): GTSet[E, T] = {
       def fill(keys: Set[E], as: Map[E, T], bs: Map[E, T], result: Map[E, T] = Map.empty[E, T]): Map[E, T] =
@@ -57,5 +72,13 @@ object GTSet {
       val nextState = fill(keys, x.state, y.state)
       new GTSet[E, T](nextState)
     }
+  }
+
+  /** Implements [[cats.PartialOrder]] type class for [[GTSet]].
+    *
+    *  @tparam E Contained element
+    */
+  implicit def partialOrder[E] = PartialOrder.byLteqv[GSet[E]] { (x, y) =>
+    x.state subsetOf y.state
   }
 }
