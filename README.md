@@ -112,7 +112,22 @@ firstReplicacombined == secondReplicacombined // the result is independent of co
 
 #### GT-Set
 
-TODO
+Grow-only set that also tracks time of addition. `combine` operation is effectively a set union, that takes maximum of timestamps.
+
+```scala
+import com.github.nscala_time.time.Imports._
+import cats._
+import cats.syntax.all._
+import com.machinomy.crdt.state._
+
+val set1 = Monoid[GTSet[Int, DateTime]].empty + (1 -> DateTime.now) + (2 -> (DateTime.now + 3.seconds))
+val set2 = Monoid[GTSet[Int, DateTime]].empty + (1 -> (DateTime.now + 1.seconds)) + (3 -> (DateTime.now + 3.seconds))
+val left = set1 |+| set2
+val right = set2 |+| set1
+
+left == right
+left.value == right.value
+```
 
 #### MC-Set
 
