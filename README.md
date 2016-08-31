@@ -151,7 +151,22 @@ val d = a - 2
 
 #### OR-Set
 
-TODO
+Observed-Removed Set assigns each element _addition_ a unique tag, and stores the tags in `additions` set per element. Removal of the element
+adds the tags observed in `additions` set to `removals` set. `Combine` operation results in a union of `additions` and `removals` sets respectively per element.
+Element is present if it is added more times than removed. Thus, addition have precedence over removal.
+
+```scala
+import java.util.UUID
+import com.machinomy.crdt.state._
+import cats.syntax.all._
+import cats._
+
+val a = Monoid[ORSet[Int, UUID]].empty + 3
+a.value == Set(3)
+val b = a - 3
+b.value == Set.empty
+(a |+| b).value == Set.empty
+```
 
 #### TP-Set
 
