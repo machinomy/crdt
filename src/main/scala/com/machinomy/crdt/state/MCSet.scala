@@ -24,6 +24,7 @@ import cats._
   *
   * @tparam E Element contained.
   * @tparam T Number assigned to an element, must implement [[Integral]] type class.
+  * @todo Find a paper to cite.
   */
 case class MCSet[E, T](state: Map[E, T])(implicit integral: Integral[T]) extends Convergent[E, Set[E]] {
   type Self = MCSet[E, T]
