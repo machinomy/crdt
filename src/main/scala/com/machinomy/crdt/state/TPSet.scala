@@ -22,7 +22,7 @@ import cats.syntax.all._
 /**
   * 2P-Set, or two-phase set. Contains one [[GSet]] for additions, and one for removals
   * Removing of an element is allowed, only if it is present in the set of additions.
-  * `Combine` operation combines additions and removals as a GSet.
+  * `Combine` operation combines additions and removals as a GSet. Element can only be added or removed once.
   *
   * @tparam E Contained element
   * @see [[com.machinomy.crdt.state.TPSet.monoid]] Behaves like a [[cats.Monoid]]

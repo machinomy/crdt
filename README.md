@@ -170,7 +170,22 @@ b.value == Set.empty
 
 #### TP-Set
 
-TODO
+2P-Set, or two-phase set. Contains one G-Set for additions, and one for removals.
+Removing of an element is allowed, only if it is present in the set of additions.
+`Combine` operation combines additions and removals as a GSet.
+
+```scala
+import com.machinomy.crdt.state._
+import cats._
+import cats.syntax.all._
+
+val a = Monoid[TPSet[Int]].empty + 1 + 2
+val b = a - 2
+val c = b - 1
+val d = c + 2
+(a |+| c).value.isEmpty
+(a |+| c |+| d).value.isEmpty
+```
 
 #### LWW-Element-Set
 
