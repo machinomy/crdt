@@ -16,11 +16,22 @@
 
 package com.machinomy.crdt.state
 
-import cats.kernel.Semilattice
+import cats._
 
-case class MCSet[E, T: Integral](state: Map[E, T] = Map.empty[E, T]) extends Convergent[E, Set[E]] {
+/** Max-Change Set. Assigns each element an integer. If the number is odd, the element is considered present.
+  * Odd number means the element is absent. To add an element you increment __odd__ number. To remove the element,
+  * __even__ number is decremented.
+  *
+  * @tparam E Element contained.
+  * @tparam T Number assigned to an element, must implement [[Integral]] type class.
+  */
+case class MCSet[E, T](state: Map[E, T])(implicit integral: Integral[T]) extends Convergent[E, Set[E]] {
   type Self = MCSet[E, T]
 
+  /** Add an element to the set.
+    *
+    * @return Updated MCSet.
+    */
   def +(element: E): Self = {
     val tag = state.getOrElse(element, integral.zero)
     if (isPresent(tag)) {
@@ -30,6 +41,10 @@ case class MCSet[E, T: Integral](state: Map[E, T] = Map.empty[E, T]) extends Con
     }
   }
 
+  /** Remove an element from the set.
+    *
+    * @return Updated MCSet.
+    */
   def -(element: E): Self = {
     val tag = state.getOrElse(element, integral.zero)
     if (isPresent(tag)) {
@@ -39,28 +54,37 @@ case class MCSet[E, T: Integral](state: Map[E, T] = Map.empty[E, T]) extends Con
     }
   }
 
-  private def increment(element: E, tag: T): Self = {
-    val nextTag = integral.plus(tag, integral.one)
-    val nextState = state.updated(element, nextTag)
-    copy(state = nextState)
-  }
-
+  /** Contained [[Set]].
+    *
+    * @return
+    */
   override def value: Set[E] = state.keySet.filter { element =>
     val change = state.getOrElse(element, integral.zero)
     isPresent(change)
   }
 
-  /**
-    * Odd means present.
+  /** Odd means present
+    *
+    * @param tag Integer assigned for the element
+    * @return
     */
-  def isPresent(tag: T): Boolean = integral.toInt(tag) % 2 != 0
+  protected def isPresent(tag: T): Boolean = integral.toInt(tag) % 2 != 0
 
-  val integral = implicitly[Integral[T]]
+  private def increment(element: E, tag: T): Self = {
+    val nextTag = integral.plus(tag, integral.one)
+    val nextState = state.updated(element, nextTag)
+    copy(state = nextState)
+  }
 }
 
 object MCSet {
-  implicit def semilattice[E, T: Integral] = new Semilattice[MCSet[E, T]] {
-    val integral = implicitly[Integral[T]]
+  /** Implements [[cats.Monoid]] type class for [[MCSet]].
+    *
+    * @tparam E Contained element
+    */
+  implicit def monoid[E, T](implicit integral: Integral[T]) = new Monoid[MCSet[E, T]] {
+    override def empty: MCSet[E, T] = new MCSet[E, T](Map.empty[E, T])
+
     override def combine(x: MCSet[E, T], y: MCSet[E, T]): MCSet[E, T] = {
       val keys = x.state.keySet ++ y.state.keySet
       val pairs =
@@ -75,6 +99,19 @@ object MCSet {
             throw new IllegalArgumentException(s"Expected to retrieve value for key $key")
         }
       MCSet(pairs.toMap)
+    }
+  }
+
+  /** Implements [[cats.PartialOrder]] type class for [[MCSet]].
+    *
+    *  @tparam E Contained element
+    */
+  implicit def partialOrder[E, T](implicit integral: Integral[T]) = PartialOrder.byLteqv[MCSet[E, T]] { (x, y) =>
+    val ids = x.state.keySet
+    ids.forall { id =>
+      val yTag = y.state.getOrElse(id, integral.zero)
+      val xTag = x.state.getOrElse(id, integral.zero)
+      integral.lteq(xTag, yTag)
     }
   }
 }

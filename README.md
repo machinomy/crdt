@@ -131,7 +131,23 @@ left.value == right.value
 
 #### MC-Set
 
-TODO
+Max-Change Set assigns each element an integer. It tracks additions and deletions of the element. Odd means the element is present.
+Even means absence of the element. Any update results in the number increment. Addition is allowed to only increment even numbers.
+Removal is allowed to only increment odd numbers. That is, one can not add already present element, or remove the absent one.
+When combining the element with maximum changes is preferred.
+
+```scala
+import com.machinomy.crdt.state._
+import cats._
+import cats.syntax.all._
+
+val a = Monoid[MCSet[Int, Int]].empty + 1 + 2
+val b = Monoid[MCSet[Int, Int]].empty + 1 + 3
+val c = Monoid[MCSet[Int, Int]].empty + 2 + 3
+val d = a - 2
+
+(d |+| c).value == b.value
+```
 
 #### OR-Set
 
