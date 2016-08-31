@@ -57,7 +57,7 @@ object GSet {
 
   /** Implements [[cats.PartialOrder]] type class for [[GSet]].
     *
-    *  @tparam E Contained element
+    * @tparam E Contained element
     */
   implicit def partialOrder[E] = PartialOrder.byLteqv[GSet[E]] { (x, y) =>
     x.state subsetOf y.state
