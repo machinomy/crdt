@@ -16,6 +16,8 @@
 
 package com.machinomy.crdt.state
 
+import java.util.UUID
+
 import com.github.nscala_time.time.Imports._
 
 trait TombStone[A] {
@@ -24,6 +26,10 @@ trait TombStone[A] {
 
 object TombStone {
   implicit object DateTimeTombStone extends TombStone[DateTime] {
-    override def next: DateTime = DateTime.now()
+    override def next = DateTime.now
+  }
+
+  implicit object UuidTombStone extends TombStone[UUID] {
+    override def next = UUID.randomUUID
   }
 }
