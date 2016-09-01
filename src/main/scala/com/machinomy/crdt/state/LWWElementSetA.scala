@@ -19,10 +19,10 @@ package com.machinomy.crdt.state
 import cats.kernel.Semilattice
 import cats.syntax.all._
 
-case class LWWElementSet[E, T: TombStone : Ordering, B: Bias](additions: GTSet[E, T], removals: GTSet[E, T])
+case class LWWElementSetA[E, T: TombStone : Ordering, B: Bias](additions: GTSet[E, T], removals: GTSet[E, T])
   extends Convergent[E, Set[E]]{
 
-  type Self = LWWElementSet[E, T, B]
+  type Self = LWWElementSetA[E, T, B]
 
   val tombStone = implicitly[TombStone[T]]
 
@@ -58,14 +58,14 @@ case class LWWElementSet[E, T: TombStone : Ordering, B: Bias](additions: GTSet[E
   }
 }
 
-object LWWElementSet {
-  def apply[E, T: TombStone : Ordering, B: Bias](): LWWElementSet[E, T, B] = new LWWElementSet[E, T, B](GTSet[E, T](), GTSet[E, T]())
+object LWWElementSetA {
+  def apply[E, T: TombStone : Ordering, B: Bias](): LWWElementSetA[E, T, B] = new LWWElementSetA[E, T, B](GTSet[E, T](), GTSet[E, T]())
 
-  implicit def semilattice[E, T: TombStone : Ordering, B: Bias] = new Semilattice[LWWElementSet[E, T, B]] {
-    override def combine(x: LWWElementSet[E, T, B], y: LWWElementSet[E, T, B]): LWWElementSet[E, T, B] = {
+  implicit def semilattice[E, T: TombStone : Ordering, B: Bias] = new Semilattice[LWWElementSetA[E, T, B]] {
+    override def combine(x: LWWElementSetA[E, T, B], y: LWWElementSetA[E, T, B]): LWWElementSetA[E, T, B] = {
       val additions = y.additions |+| x.additions
       val removals = y.removals |+| x.removals
-      LWWElementSet(additions, removals)
+      LWWElementSetA(additions, removals)
     }
   }
 }
