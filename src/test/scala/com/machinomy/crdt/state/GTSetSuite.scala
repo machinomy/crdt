@@ -1,8 +1,9 @@
 package com.machinomy.crdt.state
 
+import cats._
+import cats.syntax.all._
 import com.github.nscala_time.time.Imports._
 import org.scalatest.FunSuite
-import cats.syntax.all._
 
 class GTSetSuite extends FunSuite {
   test("Just created GTSet is empty") {
@@ -19,8 +20,8 @@ class GTSetSuite extends FunSuite {
   }
 
   test("GTSets can be merged") {
-    val a = new GTSet[Int, DateTime] + 1 + 2 + 3
-    val b = new GTSet[Int, DateTime] + 2 + 3 + 4
+    val a = Monoid[GTSet[Int, DateTime]].empty + 1 + 2 + 3
+    val b = Monoid[GTSet[Int, DateTime]].empty + 2 + 3 + 4
     val result = a |+| b
     assert(result.value === Set(1, 2, 3, 4))
   }

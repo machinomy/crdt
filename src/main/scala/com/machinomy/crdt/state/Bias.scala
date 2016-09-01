@@ -16,8 +16,10 @@
 
 package com.machinomy.crdt.state
 
+import cats.Order
+
 trait Bias[B] {
-  def apply[E, T: TombStone : Ordering](element: E, addition: T, removal: T): Option[E]
+  def apply[E, T: TombStone : Order](element: E, addition: T, removal: T): Option[E]
 }
 
 object Bias {
@@ -26,9 +28,9 @@ object Bias {
   case class RemovalWins() extends Direction
 
   implicit val additionBias = new Bias[AdditionWins] {
-    override def apply[E, T: TombStone : Ordering](element: E, add: T, remove: T): Option[E] = {
-      val ordering = implicitly[Ordering[T]]
-      if (ordering.gteq(add, remove)) {
+    override def apply[E, T: TombStone : Order](element: E, add: T, remove: T): Option[E] = {
+      val Order = implicitly[Order[T]]
+      if (Order.gteqv(add, remove)) {
         Some(element)
       } else {
         None
@@ -37,9 +39,9 @@ object Bias {
   }
 
   implicit val removalBias = new Bias[RemovalWins] {
-    override def apply[E, T: TombStone : Ordering](element: E, add: T, remove: T): Option[E] = {
-      val ordering = implicitly[Ordering[T]]
-      if (ordering.gteq(remove, add)) {
+    override def apply[E, T: TombStone : Order](element: E, add: T, remove: T): Option[E] = {
+      val Order = implicitly[Order[T]]
+      if (Order.gteqv(remove, add)) {
         None
       } else {
         Some(element)

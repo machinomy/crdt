@@ -27,7 +27,7 @@ import cats._
   * @see [[com.machinomy.crdt.state.GTSet.partialOrder]] Behaves like [[cats.PartialOrder]]
   * @todo Find a paper to cite.
   */
-case class GTSet[E, T](state: Map[E, T] = Map.empty[E, T])(implicit tombStone: TombStone[T]) extends Convergent[E, Set[E]] {
+case class GTSet[E, T: Order](state: Map[E, T] = Map.empty[E, T])(implicit tombStone: TombStone[T]) extends Convergent[E, Set[E]] {
   type Self = GTSet[E, T]
 
   /** Add `element` to the set using the current TombStone.
@@ -52,7 +52,7 @@ object GTSet {
     *
     * @tparam E Contained element
     */
-  implicit def monoid[E, T: TombStone](implicit ordering: Ordering[T]) = new Monoid[GTSet[E, T]] {
+  implicit def monoid[E, T: TombStone](implicit order: Order[T]) = new Monoid[GTSet[E, T]] {
     override def empty: GTSet[E, T] = new GTSet[E, T](Map.empty[E, T])
 
     override def combine(x: GTSet[E, T], y: GTSet[E, T]): GTSet[E, T] = {
@@ -62,7 +62,7 @@ object GTSet {
         } else {
           val key = keys.head
           val value = (as.get(key), bs.get(key)) match {
-            case (Some(a), Some(b)) => ordering.max(a, b)
+            case (Some(a), Some(b)) => order.max(a, b)
             case (Some(a), None) => a
             case (None, Some(b)) => b
             case (None, None) => throw new IllegalArgumentException(s"Expected to retrieve value for key $key")
