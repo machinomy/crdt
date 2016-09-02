@@ -16,10 +16,10 @@
 
 package com.machinomy.crdt.state
 
-import cats.Order
+import cats._
 
 trait Bias[B] {
-  def apply[E, T: TombStone : Order](element: E, addition: T, removal: T): Option[E]
+  def apply[E, T: TombStone : PartialOrder](element: E, addition: T, removal: T): Option[E]
 }
 
 object Bias {
@@ -27,10 +27,10 @@ object Bias {
   case class AdditionWins() extends Direction
   case class RemovalWins() extends Direction
 
-  implicit val additionBias = new Bias[AdditionWins] {
-    override def apply[E, T: TombStone : Order](element: E, add: T, remove: T): Option[E] = {
-      val Order = implicitly[Order[T]]
-      if (Order.gteqv(add, remove)) {
+  implicit object AdditionWinsBias extends Bias[AdditionWins] {
+    override def apply[E, T: TombStone : PartialOrder](element: E, add: T, remove: T): Option[E] = {
+      val order = implicitly[PartialOrder[T]]
+      if (order.gteqv(add, remove)) {
         Some(element)
       } else {
         None
@@ -38,10 +38,10 @@ object Bias {
     }
   }
 
-  implicit val removalBias = new Bias[RemovalWins] {
-    override def apply[E, T: TombStone : Order](element: E, add: T, remove: T): Option[E] = {
-      val Order = implicitly[Order[T]]
-      if (Order.gteqv(remove, add)) {
+  implicit object RemovalWinsObject extends Bias[RemovalWins] {
+    override def apply[E, T: TombStone : PartialOrder](element: E, add: T, remove: T): Option[E] = {
+      val order = implicitly[PartialOrder[T]]
+      if (order.gteqv(remove, add)) {
         None
       } else {
         Some(element)

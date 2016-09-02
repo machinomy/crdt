@@ -189,7 +189,27 @@ val d = c + 2
 
 #### LWW-Element-Set
 
-TODO
+Last-Writer-Wins Set attaches a timestamp to an element addition or removal.
+An element is present iff addition timestamp is bigger than that of removal.
+Concurrent addition and removal is resolved using `Bias`: either addition or removal always wins.
+
+```scala
+import com.machinomy.crdt.state._
+import cats._
+import cats.syntax.all._
+import com.github.nscala_time.time.Imports._
+
+val now = DateTime.now
+val a = Monoid[LWWElementSet[Int, DateTime, Bias.RemovalWins]].empty + 1 + (2, now) + (3, now)
+val b = Monoid[LWWElementSet[Int, DateTime, Bias.RemovalWins]].empty - (2, now) - (3, now) - (4, now)
+val resultRemoval = a |+| b
+resultRemoval.value == Set(1)
+
+val c = Monoid[LWWElementSet[Int, DateTime, Bias.AdditionWins]].empty + 1 + (2, now) + (3, now)
+val d = Monoid[LWWElementSet[Int, DateTime, Bias.AdditionWins]].empty - (2, now) - (3, now) - (4, now)
+val resultAddition = c |+| d
+resultAddition.value == Set(1, 2, 3)
+```
 
 #### LWW-Register
 
