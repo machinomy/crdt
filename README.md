@@ -211,10 +211,6 @@ val resultAddition = c |+| d
 resultAddition.value == Set(1, 2, 3)
 ```
 
-#### LWW-Register
-
-TODO
-
 ### Operation-based CRDT
 
 TODO
