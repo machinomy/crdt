@@ -1,9 +1,9 @@
-import sbtrelease.ReleaseStateTransformations._
 import de.heikoseeberger.sbtheader.license.Apache2_0
+import sbtrelease.ReleaseStateTransformations._
 
 name := "crdt"
 
-version := "0.0.3-SNAPSHOT"
+version := "0.0.3"
 
 scalaVersion := "2.11.8"
 
